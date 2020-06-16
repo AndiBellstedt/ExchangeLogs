@@ -75,6 +75,13 @@
             </ScriptProperty>
 
             <ScriptProperty>
+                <Name>ConnectorNameWithoutServerName</Name>
+                <GetScriptBlock>
+                    $this.Group.'connector-id'[0].split("\")[1].replace($this.ServerName, "").trim()
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
                 <Name>LocalIP</Name>
                 <GetScriptBlock>
                     $this.Group.'local-endpoint'[0].split(":")[0]
@@ -113,7 +120,7 @@
             <ScriptProperty>
                 <Name>ServerOptions</Name>
                 <GetScriptBlock>
-                    [string]::Join("`n", ($this.Group.data -Match "^250\s\s(?'ServerName'\S+)\sHello\s\[\S+]\s" | % { $Matches['ServerOptions'] }))
+                    [string]::Join("`n", ( $this.Group.data -Match "^250\s\s(?'ServerName'\S+)\sHello\s\[\S+]\s(?'ServerOptions'(\S|\s)+)" | ForEach-Object { $Matches['ServerOptions'] } ))
                 </GetScriptBlock>
             </ScriptProperty>
 
@@ -170,6 +177,74 @@
                     }
                 </GetScriptBlock>
             </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>IsTarpit</Name>
+                <GetScriptBlock>
+                    if($this.Group | where data -like "Tarpit*") { $true } else { $false}
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>TarpitDuration</Name>
+                <GetScriptBlock>
+                    if($this.IsTarpit) {
+                        [timespan]::FromSeconds( (($this.Group | where-Object data -like "Tarpit*").data.replace("Tarpit for '","") | ForEach-Object { $_.split("'")[0] -as [timespan] } | Measure-Object Seconds -Sum).Sum )
+                    }
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>TarpitMessage</Name>
+                <GetScriptBlock>
+                    if($this.IsTarpit) {
+                        (($this.Group | Where-Object data -like "Tarpit*").data -split "(due\sto\s')")[-1].trim("'")
+                    }
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>MailFrom</Name>
+                <GetScriptBlock>
+                    [string]::Join(",", (($this.Group.data | ForEach-Object { if($_ -match "^MAIL FROM:&lt;(?'mailadress'\S+)>") { $Matches['mailadress'] } }).trim()) )
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>RcptTo</Name>
+                <GetScriptBlock>
+                    [string]::Join(",", (($this.Group.data | ForEach-Object { if($_ -match "^RCPT TO:&lt;(?'mailadress'\S+)>") { $Matches['mailadress'] } }).trim()) )
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>XOOrg</Name>
+                <GetScriptBlock>
+                    [string]::Join(",", (($this.Group.data | ForEach-Object { if($_ -match "XOORG=(?'xoorg'\S+)") { $Matches['xoorg'] } }).trim()) )
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>SmtpId</Name>
+                <GetScriptBlock>
+                    [string]::Join(",", (($this.Group.data | ForEach-Object { if($_ -match "^250\s2.6.0\s(?'SmtpId'\S+)") { $Matches['SmtpId'] } }).trim(">").trim("&lt;") ) )
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>RemoteServerHostName</Name>
+                <GetScriptBlock>
+                    [string]::Join(",", (($this.Group.data | ForEach-Object { if($_ -match "^250\s2.6.0\s(?'SmtpId'\S+)") { $Matches['SmtpId'].split("@")[1] } }).trim(">") ) )
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>InternalId</Name>
+                <GetScriptBlock>
+                    [string]::Join(",", (($this.Group.data | ForEach-Object { if($_ -match "^250\s2\.6\.0\s.*InternalId=(?'InternalId'\w+)") { $Matches['InternalId'] } })) )
+                </GetScriptBlock>
+            </ScriptProperty>
+
 
             <ScriptProperty>
                 <Name>LogText</Name>
