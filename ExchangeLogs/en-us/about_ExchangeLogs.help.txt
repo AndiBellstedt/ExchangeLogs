@@ -1,0 +1,11 @@
+﻿TOPIC
+	about_ExchangeLogs
+	
+SHORT DESCRIPTION
+	Explains how to use the ExchangeLogs powershell module
+	
+LONG DESCRIPTION
+	<Insert Content here>
+
+KEYWORDS
+	ExchangeLogs

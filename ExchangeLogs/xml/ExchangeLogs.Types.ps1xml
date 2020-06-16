@@ -1,0 +1,205 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Types>
+    <!-- ExchangeLog.SMTPReceiveProtocolLog.Record -->
+    <!--
+    <Type>
+        <Name>Deserialized.ExchangeLog.SMTPReceiveProtocolLog.Record</Name>
+        <Members>
+            <MemberSet>
+                <Name>PSStandardMembers</Name>
+                <Members>
+                    <NoteProperty>
+                        <Name>
+                            TargetTypeForDeserialization
+                        </Name>
+                        <Value>
+                            ExchangeLog.SMTPReceiveProtocolLog.Record
+                        </Value>
+                    </NoteProperty>
+                </Members>
+            </MemberSet>
+        </Members>
+    </Type>
+    -->
+
+    <Type>
+        <Name>ExchangeLog.SMTPReceiveProtocolLog.Record</Name>
+        <Members>
+            <ScriptProperty>
+                <Name>DateLogFile</Name>
+                <GetScriptBlock>
+                    $this.Date -as [datetime]
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>DateStart</Name>
+                <GetScriptBlock>
+                    ($this.Group | Sort-Object 'date-time')[0].'date-time' -as [datetime]
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>DateEnd</Name>
+                <GetScriptBlock>
+                    ($this.Group | Sort-Object 'date-time')[-1].'date-time' -as [datetime]
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>SequenceCount</Name>
+                <GetScriptBlock>
+                    $this.Group.count
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>ConnectorID</Name>
+                <GetScriptBlock>
+                    $this.Group.'connector-id'[0]
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>ServerName</Name>
+                <GetScriptBlock>
+                    $this.Group.'connector-id'[0].split("\")[0]
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>ConnectorName</Name>
+                <GetScriptBlock>
+                    $this.Group.'connector-id'[0].split("\")[1]
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>LocalIP</Name>
+                <GetScriptBlock>
+                    $this.Group.'local-endpoint'[0].split(":")[0]
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>LocalPort</Name>
+                <GetScriptBlock>
+                    $this.Group.'local-endpoint'[0].split(":")[1]
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>RemoteIP</Name>
+                <GetScriptBlock>
+                    $this.Group.'remote-endpoint'[0].split(":")[0]
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>RemotePort</Name>
+                <GetScriptBlock>
+                    $this.Group.'remote-endpoint'[0].split(":")[1]
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>ServerNameHELO</Name>
+                <GetScriptBlock>
+                    $null = $this.Group | where data -Match "^220\s(?'ServerName'\S+)\sMicrosoft"
+                    $Matches['ServerName']
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>ServerOptions</Name>
+                <GetScriptBlock>
+                    [string]::Join("`n", ($this.Group.data -Match "^250\s\s(?'ServerName'\S+)\sHello\s\[\S+]\s" | % { $Matches['ServerOptions'] }))
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>ClientNameHELO</Name>
+                <GetScriptBlock>
+                    [string]::Join(",", (($this.Group | where data -like "EHLO *").data.trim("EHLO ") | Select-Object -Unique) )
+                </GetScriptBlock>
+            </ScriptProperty>
+
+
+            <ScriptProperty>
+                <Name>TLSenabled</Name>
+                <GetScriptBlock>
+                    if($this.Group | Where-Object data -CLike "STARTTLS") { $true } else { $false }
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>AuthenticationEnabled</Name>
+                <GetScriptBlock>
+                    if($this.Group.data -clike "AUTH *") { $true } else { $false}
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>Authentication</Name>
+                <GetScriptBlock>
+                    if($this.AuthenticationEnabled) {
+                        $null = $this.Group | where data -Match "^AUTH\s(?'Method'\S+)"
+                        $Matches['Method']
+                    }
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>AuthenticationUser</Name>
+                <GetScriptBlock>
+                    if($this.AuthenticationEnabled) {
+                        ($this.Group | Where-Object context -like "authenticated").data
+                    }
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>AuthenticationMessage</Name>
+                <GetScriptBlock>
+                    if($this.AuthenticationEnabled) {
+                        $text = @( "235 2.7.0 Authentication successful","504 5.7.4 Unrecognized authentication type","535 5.7.3 Authentication unsuccessful" )
+                        [array]$authMsg = $this.Group | Where-Object data -in $text | select-Object -Last 1
+                        if($authMsg) {
+                            $authMsg.data
+                        }
+                    }
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>LogText</Name>
+                <GetScriptBlock>
+                    $logtext = ""
+                    foreach($item in $this.Group) {
+                        if($item.data.Length -gt 0) {
+                            $logtext = $logtext + "$(if($logtext){"`n"})" + $item.event + " " + $item.data
+                            if($item.context.Length -gt 0) {
+                                $logtext = $logtext + "$(if($logtext){"`n"})" + $item.event + " " + $item.context
+                            }
+                        } else {
+                            $logtext = $logtext + "$(if($logtext){"`n"})" + $item.event + " " + $item.context
+                        }
+                    }
+                    $logtext
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <CodeProperty IsHidden="true">
+                <Name>SerializationData</Name>
+                <GetCodeReference>
+                    <TypeName>PSFramework.Serialization.SerializationTypeConverter</TypeName>
+                    <MethodName>GetSerializationData</MethodName>
+                </GetCodeReference>
+            </CodeProperty>
+        </Members>
+
+        <TypeConverter>
+            <TypeName>PSFramework.Serialization.SerializationTypeConverter</TypeName>
+        </TypeConverter>
+    </Type>
+</Types>

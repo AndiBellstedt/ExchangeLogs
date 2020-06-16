@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2010
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{CBB45429-9D40-4ECD-8703-00CEA0865F4A}") = "ExchangeLogs", "ExchangeLogs\ExchangeLogs.csproj", "{0ACE7C7B-7457-4CC7-A02A-EB7EDC6AD422}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{0ACE7C7B-7457-4CC7-A02A-EB7EDC6AD422}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0ACE7C7B-7457-4CC7-A02A-EB7EDC6AD422}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0ACE7C7B-7457-4CC7-A02A-EB7EDC6AD422}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0ACE7C7B-7457-4CC7-A02A-EB7EDC6AD422}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {48C544D4-16AC-4720-843C-E19AB396D490}
+	EndGlobalSection
+EndGlobal
