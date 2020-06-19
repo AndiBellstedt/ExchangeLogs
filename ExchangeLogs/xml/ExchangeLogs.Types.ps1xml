@@ -120,7 +120,7 @@
             <ScriptProperty>
                 <Name>ServerOptions</Name>
                 <GetScriptBlock>
-                    [string]::Join("`n", ( $this.Group.data -Match "^250\s\s(?'ServerName'\S+)\sHello\s\[\S+]\s(?'ServerOptions'(\S|\s)+)" | ForEach-Object { $Matches['ServerOptions'] } ))
+                    [string]::Join(",", ($this.Group.data | ForEach-Object { if($_ -match "^250\s\s(?'ServerName'\S+)\sHello\s\[\S+]\s(?'ServerOptions'(\S|\s)+)") { $Matches['ServerOptions'] }}) )
                 </GetScriptBlock>
             </ScriptProperty>
 
@@ -133,7 +133,7 @@
 
 
             <ScriptProperty>
-                <Name>TLSenabled</Name>
+                <Name>TlsEnabled</Name>
                 <GetScriptBlock>
                     if($this.Group | Where-Object data -CLike "STARTTLS") { $true } else { $false }
                 </GetScriptBlock>
@@ -147,7 +147,7 @@
             </ScriptProperty>
 
             <ScriptProperty>
-                <Name>Authentication</Name>
+                <Name>AuthenticationType</Name>
                 <GetScriptBlock>
                     if($this.AuthenticationEnabled) {
                         $null = $this.Group | where data -Match "^AUTH\s(?'Method'\S+)"
@@ -179,7 +179,7 @@
             </ScriptProperty>
 
             <ScriptProperty>
-                <Name>IsTarpit</Name>
+                <Name>TarpitDetect</Name>
                 <GetScriptBlock>
                     if($this.Group | where data -like "Tarpit*") { $true } else { $false}
                 </GetScriptBlock>
