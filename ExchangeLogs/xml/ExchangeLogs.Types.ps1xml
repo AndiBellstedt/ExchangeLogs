@@ -245,6 +245,116 @@
                 </GetScriptBlock>
             </ScriptProperty>
 
+            <ScriptProperty>
+                <Name>MailSize</Name>
+                <GetScriptBlock>
+                    [string]::Join(",", (($this.Group.data | ForEach-Object { if($_ -match "\w+(?=\sbytes\sin\s)") { $Matches[0] } })) )
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>DeliveryDuration</Name>
+                <GetScriptBlock>
+                    $duration = [timespan]::new(0)
+                    $this.Group.data | ForEach-Object { if($_ -match "(?&lt;=\sbytes\sin\s)(\d|\.)+") { $duration = $duration + [timespan]::FromSeconds( [System.Convert]::ToDouble($Matches[0], [cultureinfo]::GetCultureInfo('en-us') )) }}
+                    $duration
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>DeliveryBandwidth</Name>
+                <GetScriptBlock>
+                    $bandwidth = 0
+                    $this.Group.data | ForEach-Object { if($_ -match "(?'duration'(\d*|,)+)(?=\sKB\/sec\sQueued\smail\sfor\sdelivery)") { $bandwidth = $bandwidth + [double]::Parse($Matches['duration']) }}
+                    $bandwidth
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>FinalizeMessage</Name>
+                <GetScriptBlock>
+                    ($this.Group | Where-Object event -NotLike "-")[-1].data
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty IsHidden="true">
+                <Name>TlsRecords</Name>
+                <GetScriptBlock>
+                    [int]$start = [int](($this.Group | Where-Object data -like "220 2.0.0 SMTP server ready").'sequence-number') | Select-Object -First 1
+                    [int]$stop = ($this.Group | Where-Object data -like "250  * Hello *").'sequence-number' | ForEach-Object { [int]$_ } | Where-Object { $_ -ge $start } | Select-Object -First 1
+                    $this.Group | Where-Object event -eq '*' | where { $_.'sequence-number' -gt $start -or $_.'sequence-number' -lt $stop } | Where-Object { $_.data -like "" -or $_.data -like " CN=" -or $_.context -like "* certificate *"} | where { $_.context -like "tls*" -or $_.context -like "* certificate *" -or $_.context -like "Validated*" } | Select-Object 'sequence-number', data, context
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>TlsCrypto</Name>
+                <GetScriptBlock>
+                    ($this.TlsRecords | Where-Object context -like "TLS *").context
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>TlsProtocol</Name>
+                <GetScriptBlock>
+                    [string]::Join(",", ($this.TlsRecords | ForEach-Object { if($_ -match "(?&lt;=\sprotocol\s)\S+") { $Matches[0] }}) )
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>TlsAlgorithmEncryption</Name>
+                <GetScriptBlock>
+                    [string]::Join(",", ($this.TlsRecords | ForEach-Object { if($_ -match "(?&lt;=\sencryption\salgorithm\s)\S+") { $Matches[0] }}) )
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>TlsAlgorithmMacHash</Name>
+                <GetScriptBlock>
+                    [string]::Join(",", ($this.TlsRecords | ForEach-Object { if($_ -match "(?&lt;=\shash\salgorithm\s)\S+") { $Matches[0] }}) )
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>TlsAlgorithmKeyExchange</Name>
+                <GetScriptBlock>
+                    [string]::Join(",", ($this.TlsRecords | ForEach-Object { if($_ -match "(?&lt;=\sexchange\salgorithm\s)\S+") { $Matches[0] }}) )
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>TlsCertificateServer</Name>
+                <GetScriptBlock>
+                    ($this.TlsRecords | where-Object context -Like "Sending certificat*").data.trim()
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>TlsCertificateClient</Name>
+                <GetScriptBlock>
+                    ($this.TlsRecords | where-Object context -Like "Remote certificat*").data.trim()
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>TlsDomainCapabilities</Name>
+                <GetScriptBlock>
+                    [string]::Join(",", ( (((($this.TlsRecords | Where-Object context -Like "*; Status='*").context -Split "; ") | Where-Object { $_ -like "TlsDomainCapabilities=*" }) -split "=").trim("'") ))
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>TlsStatus</Name>
+                <GetScriptBlock>
+                    [string]::Join(",", ( (((($this.TlsRecords | Where-Object context -Like "*; Status='*").context -Split "; ") | Where-Object { $_ -like "Status=*" }) -split "=").trim("'") ))
+                </GetScriptBlock>
+            </ScriptProperty>
+
+            <ScriptProperty>
+                <Name>TlsDomain</Name>
+                <GetScriptBlock>
+                    [string]::Join(",", ( (((($this.TlsRecords | Where-Object context -Like "*; Status='*").context -Split "; ") | Where-Object { $_ -like "Domain=*" }) -split "=").trim("'") ))
+                </GetScriptBlock>
+            </ScriptProperty>
 
             <ScriptProperty>
                 <Name>LogText</Name>
