@@ -5,11 +5,22 @@
         <View>
             <Name>ExchangeLog.SMTPReceiveProtocolLog.Record_table</Name>
             <ViewSelectedBy>
-                <TypeName>Foo.Bar</TypeName>
+                <TypeName>ExchangeLog.SMTPReceiveProtocolLog.Record</TypeName>
+                <TypeName>ExchangeLog.SMTPReceiveProtocolLog.Converted.Record</TypeName>
             </ViewSelectedBy>
             <TableControl>
                 <AutoSize />
                 <TableHeaders>
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
                     <TableColumnHeader />
                     <TableColumnHeader />
                 </TableHeaders>
@@ -17,10 +28,40 @@
                     <TableRowEntry>
                         <TableColumnItems>
                             <TableColumnItem>
-                                <PropertyName>Foo</PropertyName>
+                                <PropertyName>DateStart</PropertyName>
                             </TableColumnItem>
                             <TableColumnItem>
-                                <PropertyName>Bar</PropertyName>
+                                <PropertyName>session-Id</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>ServerName</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>ConnectorName</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>MailFrom</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>RcptTo</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>FinalizeMessage</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>TlsEnabled</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>TlsProtocol</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>AuthenticationEnabled</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>InternalId</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>LogFileName</PropertyName>
                             </TableColumnItem>
                         </TableColumnItems>
                     </TableRowEntry>
@@ -32,6 +73,7 @@
             <Name>ExchangeLog.SMTPReceiveProtocolLog.Record_list</Name>
             <ViewSelectedBy>
                 <TypeName>ExchangeLog.SMTPReceiveProtocolLog.Record</TypeName>
+                <TypeName>ExchangeLog.SMTPReceiveProtocolLog.Converted.Record</TypeName>
             </ViewSelectedBy>
             <ListControl>
                 <ListEntries>
