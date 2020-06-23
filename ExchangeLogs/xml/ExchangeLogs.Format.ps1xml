@@ -6,7 +6,7 @@
             <Name>ExchangeLog.SMTPReceiveProtocolLog.Record_table</Name>
             <ViewSelectedBy>
                 <TypeName>ExchangeLog.SMTPReceiveProtocolLog.Record</TypeName>
-                <TypeName>ExchangeLog.SMTPReceiveProtocolLog.Converted.Record</TypeName>
+                <TypeName>ExchangeLog.SMTPReceiveProtocolLog.Record.Expanded</TypeName>
             </ViewSelectedBy>
             <TableControl>
                 <AutoSize />
@@ -73,7 +73,7 @@
             <Name>ExchangeLog.SMTPReceiveProtocolLog.Record_list</Name>
             <ViewSelectedBy>
                 <TypeName>ExchangeLog.SMTPReceiveProtocolLog.Record</TypeName>
-                <TypeName>ExchangeLog.SMTPReceiveProtocolLog.Converted.Record</TypeName>
+                <TypeName>ExchangeLog.SMTPReceiveProtocolLog.Record.Expanded</TypeName>
             </ViewSelectedBy>
             <ListControl>
                 <ListEntries>

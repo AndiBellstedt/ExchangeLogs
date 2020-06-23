@@ -42,13 +42,14 @@
 
     begin {
         $files = New-Object -TypeName "System.Collections.ArrayList"
+        $cpuCount = ((Get-CimInstance -ClassName win32_processor -Property NumberOfLogicalProcessors).NumberOfLogicalProcessors | Measure-Object -Sum).Sum
     }
 
     process {
         # get files from folder
         Write-PSFMessage -Level Verbose -Message "Gettings files$( if($Filter){" by filter '$($Filter)'"} ) in path '$path'"
         foreach ($pathItem in $Path) {
-            if( (Get-Item -Path $pathItem).PSIsContainer -and (-not $Recurse)) { continue }
+            #if( (Get-Item -Path $pathItem).PSIsContainer -and (-not $Recurse)) { continue }
             $options = @{
                 "Path" = $pathItem
                 "File" = $true
@@ -87,12 +88,12 @@
                 $overlaprecord = $resultCurrentFile | Where-Object $sessionIdName -like $item.$sessionIdName
                 if($overlaprecord) {
                     Write-Verbose "Overlapping records found in files '$($item.LogFileName)' and '$($resultCurrentFile[0].LogFileName)' (session id: $($item.$sessionIdName))" -Verbose
-                    #$item.Group = $item.Group + $overlaprecord.Group
+                    $item.Group = $item.Group + $overlaprecord.Group
                     #throw 1
                 }
 
                 # remove record fragment from current logfile
-                #$resultCurrentFile = $resultCurrentFile | Where-Object $sessionIdName -notin $item.$sessionIdName
+                $resultCurrentFile = $resultCurrentFile | Where-Object $sessionIdName -notin $item.$sessionIdName
 
                 # output merged record
                 $item
@@ -109,12 +110,27 @@
             # progress status info
             if($files.count -lt 100) { $refreshInterval = 1 } else { $refreshInterval = [math]::Round($files.count / 100) }
             if(($filecounter % $refreshInterval) -eq 0) {
-                Write-Progress -Activity "Parsing logfiles in $($fileCurrent.Directory)" -Status "$($fileCurrent.Name) ($($filecounter) / $($files.count))" -PercentComplete ($filecounter/$files.count*100)
+                Write-Progress -Activity "Import logfiles in $($fileCurrent.Directory)" -Status "$($fileCurrent.Name) ($($filecounter) / $($files.count))" -PercentComplete ($filecounter/$files.count*100)
             }
         }
         $recordCount = $recordCount + $filePrevious.count
         $null = $resultPreviousFile | ForEach-Object {$result.Add( $_ ) }
-        $result
+
+        $batchSize = [math]::Truncate( ($result.Count / $cpuCount) )
+        $i = 0
+        do {
+            $recordset = $result[$i .. ($i+$batchSize-1)]
+            $null = Start-RSJob -FunctionsToImport Expand-LogRecord -ScriptBlock {
+                Expand-LogRecord -InputObject $using:recordset -sessionIdName $using:sessionIdName
+            }
+            $i = $i + $batchSize
+        } until ($i -gt $result.Count)
+        do {
+            $open = Get-RSJob | where State -NotLike "Completed"
+            Start-Sleep -Milliseconds 100
+        } while ($open)
+        Get-RSJob | Receive-RSJob
+        Get-RSJob | Remove-RSJob
 
         $traceTimer.Stop()
         Write-PSFMessage -Level Significant -Message "Duration on parsing $($files.count) file(s) with $($result.count) records: $($traceTimer.Elapsed)"

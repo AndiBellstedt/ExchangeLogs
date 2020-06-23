@@ -1,70 +1,47 @@
-﻿function Import-LogData {
+function global:Expand-LogRecord {
     <#
     .SYNOPSIS
-        Get csv content from logfile output grouped records
+        Expand the data from records group into a flat data record
 
     .DESCRIPTION
-        Get csv content from logfile output grouped records
+        Expand the data from records group into a flat data record
 
-    .PARAMETER File
-        The file to gather data
+    .PARAMETER InputObject
+        The dataset to expand
 
     .EXAMPLE
-        PS C:\> Import-LogData -File RECV2020061300-1.LOG
+        PS C:\> Expand-LogRecord -InputObject $DataSet
 
-        Return the csv records as grouped records by SessionID
+        Expand the data from records group into a flat data record
 #>
     [CmdletBinding()]
     param (
-        $File
+        $InputObject,
+
+        [string]
+        $sessionIdName
     )
 
-    # Get content from logfile
-    $File = Get-Item -Path $File -ErrorAction Stop
-    Write-Verbose "Get content from logfile: $($File.Fullname)"
-    $content = $File | Get-Content
+    begin {
 
-    # split metadata and logcontent (first lines fo logfile)
-    $metadata = $content -match '^#.*'
-    $header = $metadata[-1].split(": ")[-1]
-    $logcontent = $content -notmatch $header
-
-    # query meta data informations into hashtable
-    $metadataHash = [ordered]@{}
-    foreach ($metadatarecord in ($metadata[0 .. ($metadata.Count - 2)])) {
-        $_data = $metadatarecord.TrimStart("#") -Split ': '
-        $metadataHash.Add($_data[0], $_data[1])
     }
 
-    # convert filecontent to csv data and group records if know/supportet logfile type
-    $records = $logcontent | ConvertFrom-Csv -Delimiter "," -Header $header.Split(",")
-    $sessionIdName = Resolve-SessionIdName -LogType $metadataHash['Log-type']
-    $output = New-Object -TypeName "System.Collections.ArrayList"
-    if ($sessionIdName) {
-        foreach ($group in ($records | Group-Object $sessionIdName)) {
-            $null = $output.Add(
-                [PSCustomObject]@{
-                    "PSTypeName"   = "ExchangeLog.$($metadataHash['Log-type'].Replace(' ','')).Group"
-                    $sessionIdName = $group.Name
-                    "Group"        = $group.Group
-                    "Log-type"     = $metadataHash["Log-type"]
-                    "metadataHash" = $metadataHash
-                    "LogFileName"  = $File.Name
-                    "LogFolder"    = $File.Directory
-                }
-            )
-            <#
-            $groupData = $group.Group.data
+    process {
+        #$output = New-Object -TypeName "System.Collections.ArrayList"
+        foreach ($record in $InputObject) {
+            #$sessionIdName = Resolve-SessionIdName -LogType $record.metadataHash['Log-type']
 
-            $serverName = ($group.Group)[0].'connector-id'.split("\")[0]
+            $groupData = $record.Group.data
 
-            $null = $group.Group | Where-Object data -Match "^220\s(?'ServerName'\S+)\sMicrosoft"
-            if ($Matches['ServerName']) {$ServerNameHELO = $Matches['ServerName']} else { $ServerNameHELO = "" }
+            $serverName = ($record.Group)[0].'connector-id'.split("\")[0]
+
+            $null = $record.Group | Where-Object data -Match "^220\s(?'ServerName'\S+)\sMicrosoft"
+            if ($Matches['ServerName']) { $ServerNameHELO = $Matches['ServerName'] } else { $ServerNameHELO = "" }
 
             $ServerOptions = foreach ($item in $groupData) { if ($item -match "^250\s\s\S+\sHello\s\[\S+]\s(?'ServerOptions'(\S|\s)+)") { $Matches['ServerOptions'] } }
             if (-not $ServerOptions) { $ServerOptions = "" } else { $ServerOptions = [string]::Join(",", $ServerOptions) }
 
-            [string]$clientNameHELO = ($group.Group | Where-Object data -like "EHLO *").data
+            [string]$clientNameHELO = ($record.Group | Where-Object data -like "EHLO *").data
             $clientNameHELO = $clientNameHELO.trim("EHLO ") | Select-Object -Unique
             if (-not $clientNameHELO) { $clientNameHELO = "" } else { $clientNameHELO = [string]::Join(",", $clientNameHELO) }
 
@@ -107,31 +84,31 @@
                 }
             }
 
-            if ($group.Group | Where-Object data -like "Tarpit*") { $TarpitDetect = $true } else { $TarpitDetect = $false }
+            if ($record.Group | Where-Object data -like "Tarpit*") { $TarpitDetect = $true } else { $TarpitDetect = $false }
             $TarpitDuration = [timespan]::new(0)
             $TarpitMessage = ""
             if ($TarpitDetect) {
-                $TarpitDuration = [timespan]::FromSeconds( (($group.Group | where-Object data -like "Tarpit*").data.replace("Tarpit for '", "") | ForEach-Object { $_.split("'")[0] -as [timespan] } | Measure-Object Seconds -Sum).Sum )
-                $TarpitMessage = (($group.Group | Where-Object data -like "Tarpit*").data -split "(due\sto\s')")[-1].trim("'")
+                $TarpitDuration = [timespan]::FromSeconds( (($record.Group | where-Object data -like "Tarpit*").data.replace("Tarpit for '", "") | ForEach-Object { $_.split("'")[0] -as [timespan] } | Measure-Object Seconds -Sum).Sum )
+                $TarpitMessage = (($record.Group | Where-Object data -like "Tarpit*").data -split "(due\sto\s')")[-1].trim("'")
             }
 
-            [string]$ConnectorID = $group.Group.'connector-id'[0]
+            [string]$ConnectorID = $record.Group.'connector-id'[0]
             if ($ConnectorID) { $ConnectorName = $ConnectorID.split("\")[1] } else { $ConnectorName = "" }
             if ($ConnectorID) { $ConnectorNameWithoutServerName = $ConnectorName.replace($ServerName, "").trim() } else { $ConnectorNameWithoutServerName = "" }
-            [string]$localEndpoint = $group.Group.'local-endpoint'[0]
-            [string]$remoteEndpoint = $group.Group.'remote-endpoint'[0]
+            [string]$localEndpoint = $record.Group.'local-endpoint'[0]
+            [string]$remoteEndpoint = $record.Group.'remote-endpoint'[0]
 
             if ($groupData -clike "AUTH *") { $AuthenticationEnabled = $true } else { $AuthenticationEnabled = $false }
             $AuthenticationType = ""
             $AuthenticationUser = ""
             $AuthenticationMessage = ""
             if ($AuthenticationEnabled) {
-                $null = $group.Group | Where-Object data -Match "^AUTH\s(?'Method'\S+)"
+                $null = $record.Group | Where-Object data -Match "^AUTH\s(?'Method'\S+)"
                 $AuthenticationType = $Matches['Method']
-                $AuthenticationUser = ($group.Group | Where-Object context -like "authenticated").data
+                $AuthenticationUser = ($record.Group | Where-Object context -like "authenticated").data
 
                 $text = @( "235 2.7.0 Authentication successful", "504 5.7.4 Unrecognized authentication type", "535 5.7.3 Authentication unsuccessful" )
-                [string]$AuthenticationMessage = ($group.Group | Where-Object data -in $text)[-1].data
+                [string]$AuthenticationMessage = ($record.Group | Where-Object data -in $text)[-1].data
             }
 
             # TLS records
@@ -147,9 +124,9 @@
             $TlsStatus = ""
             $TlsDomain = ""
             if ($TlsEnabled) {
-                [int]$_start = ( ($group.Group | Where-Object data -like "220 2.0.0 SMTP server ready").'sequence-number' )[0]
-                [int]$_stop = ( ($group.Group | Where-Object data -like "250  * Hello *").'sequence-number' | ForEach-Object { [int]$_ } | Where-Object { $_ -ge $start } )[0]
-                $TlsRecords = $group.Group | Where-Object event -eq '*' | Where-Object { $_.'sequence-number' -gt $_start -or $_.'sequence-number' -lt $_stop } | Where-Object { $_.data -like "" -or $_.data -like " CN=" -or $_.context -like "* certificate *" } | Where-Object { $_.context -like "tls*" -or $_.context -like "* certificate *" -or $_.context -like "Validated*" } | Select-Object 'sequence-number', data, context
+                [int]$_start = ( ($record.Group | Where-Object data -like "220 2.0.0 SMTP server ready").'sequence-number' )[0]
+                [int]$_stop = ( ($record.Group | Where-Object data -like "250  * Hello *").'sequence-number' | ForEach-Object { [int]$_ } | Where-Object { $_ -ge $start } )[0]
+                $TlsRecords = $record.Group | Where-Object event -eq '*' | Where-Object { $_.'sequence-number' -gt $_start -or $_.'sequence-number' -lt $_stop } | Where-Object { $_.data -like "" -or $_.data -like " CN=" -or $_.context -like "* certificate *" } | Where-Object { $_.context -like "tls*" -or $_.context -like "* certificate *" -or $_.context -like "Validated*" } | Select-Object 'sequence-number', data, context
 
                 $TlsCrypto = ($TlsRecords | Where-Object context -like "TLS *").context
                 if (-not $TlsCrypto) { $TlsCrypto = "" } else { $TlsCrypto = [string]::Join(",", $TlsCrypto) }
@@ -186,7 +163,7 @@
             }
 
             $logtext = ""
-            foreach ($item in $group.Group) {
+            foreach ($item in $record.Group) {
                 if ($item.data.Length -gt 0) {
                     $logtext = $logtext + "$(if($logtext){"`n"})" + $item.event + " " + $item.data
                     if ($item.context.Length -gt 0) {
@@ -200,11 +177,13 @@
 
             # construct output object
             $outputRecord = [PSCustomObject]@{
-                "PSTypeName"                     = "ExchangeLog.$($metadataHash['Log-type'].Replace(' ','')).Converted.Record"
-                $sessionIdName                   = $group.Name
-                "DateStart"                      = ($group.Group | Sort-Object 'date-time')[0].'date-time' -as [datetime]
-                "DateEnd"                        = ($group.Group | Sort-Object 'date-time')[-1].'date-time' -as [datetime]
-                "SequenceCount"                  = $group.Group.count
+                "PSTypeName"                     = "ExchangeLog.$($record.metadataHash['Log-type'].Replace(' ','')).Record.Expanded"
+                "LogFolder"                      = $File.Directory
+                "LogFileName"                    = $File.Name
+                $sessionIdName                   = $record.Name
+                "DateStart"                      = ($record.Group | Sort-Object 'date-time')[0].'date-time' -as [datetime]
+                "DateEnd"                        = ($record.Group | Sort-Object 'date-time')[-1].'date-time' -as [datetime]
+                "SequenceCount"                  = $record.Group.count
                 "ConnectorID"                    = $ConnectorID
                 "ServerName"                     = $ServerName
                 "ConnectorName"                  = $ConnectorName
@@ -247,26 +226,21 @@
                 "LogText"                        = $LogText
             }
 
-            $null = $output.Add( $outputRecord )
-#>
-        }
-    } else {
-        foreach ($record in $records) {
-            $record.PSOBject.TypeNames.Insert(0, "ExchangeLog.$($metadataHash['Log-type'].Replace(' ','')).Record" )
-            $null = $output.Add( $record )
+            foreach ($key in $metadataHash.Keys) {
+                $outputRecord | Add-Member -MemberType NoteProperty -Name $key -Value $metadataHash[$key] -Force
+            }
+            #$null = $output.Add( $outputRecord )
+            $outputRecord
         }
 
-        # add metadata info to record groups
-        foreach ($key in $metadataHash.Keys) {
-            $output | Add-Member -MemberType NoteProperty -Name $key -Value $metadataHash[$key] -Force
-        }
-        $output | Add-Member -MemberType NoteProperty -Name "LogFileName" -Value $File.Name -Force
-        $output | Add-Member -MemberType NoteProperty -Name "LogFolder" -Value $File.Directory -Force
     }
 
+    end {
 
-    Write-Verbose "Finished logfile $($File.Name). Found $($output.count) recors"
-
-    # output data to the pipeline
-    $output
+    }
 }
+
+(Get-Command Expand-LogRecord).Visibility = "Private"
+
+
+#new-psftabcompletionresult
