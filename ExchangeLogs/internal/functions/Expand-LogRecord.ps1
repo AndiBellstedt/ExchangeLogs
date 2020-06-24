@@ -1,4 +1,5 @@
 function global:Expand-LogRecord {
+#function Expand-LogRecord {
     <#
     .SYNOPSIS
         Expand the data from records group into a flat data record
@@ -240,7 +241,4 @@ function global:Expand-LogRecord {
     }
 }
 
-(Get-Command Expand-LogRecord).Visibility = "Private"
-
-
-#new-psftabcompletionresult
+#(Get-Command Expand-LogRecord).Visibility = "Private"
