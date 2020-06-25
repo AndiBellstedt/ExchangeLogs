@@ -1,5 +1,5 @@
 function global:Expand-LogRecord {
-#function Expand-LogRecord {
+    #function Expand-LogRecord {
     <#
     .SYNOPSIS
         Expand the data from records group into a flat data record
@@ -9,6 +9,12 @@ function global:Expand-LogRecord {
 
     .PARAMETER InputObject
         The dataset to expand
+
+    .PARAMETER SessionIdName
+        The name of the session grouping attribute
+
+    .PARAMETER ShowProgress
+        If specified, progress information on record processing is showed
 
     .EXAMPLE
         PS C:\> Expand-LogRecord -InputObject $DataSet
@@ -20,18 +26,22 @@ function global:Expand-LogRecord {
         $InputObject,
 
         [string]
-        $sessionIdName
+        $SessionIdName,
+
+        [switch]
+        $ShowProgress
     )
 
     begin {
-
     }
 
     process {
-        #$output = New-Object -TypeName "System.Collections.ArrayList"
-        foreach ($record in $InputObject) {
-            #$sessionIdName = Resolve-SessionIdName -LogType $record.metadataHash['Log-type']
+        if($ShowProgress) {
+            $i = 0
+            if($InputObject.count -lt 100) { $refreshInterval = 1 } else { $refreshInterval = [math]::Round($InputObject.count / 100) }
+        }
 
+        foreach ($record in $InputObject) {
             $groupData = $record.Group.data
 
             $serverName = ($record.Group)[0].'connector-id'.split("\")[0]
@@ -40,48 +50,45 @@ function global:Expand-LogRecord {
             if ($Matches['ServerName']) { $ServerNameHELO = $Matches['ServerName'] } else { $ServerNameHELO = "" }
 
             $ServerOptions = foreach ($item in $groupData) { if ($item -match "^250\s\s\S+\sHello\s\[\S+]\s(?'ServerOptions'(\S|\s)+)") { $Matches['ServerOptions'] } }
-            if (-not $ServerOptions) { $ServerOptions = "" } else { $ServerOptions = [string]::Join(",", $ServerOptions) }
+            if (-not $ServerOptions) { [string]$ServerOptions = "" } else { [string]$ServerOptions = [string]::Join(",", $ServerOptions) }
 
             [string]$clientNameHELO = ($record.Group | Where-Object data -like "EHLO *").data
             $clientNameHELO = $clientNameHELO.trim("EHLO ") | Select-Object -Unique
-            if (-not $clientNameHELO) { $clientNameHELO = "" } else { $clientNameHELO = [string]::Join(",", $clientNameHELO) }
+            if (-not $clientNameHELO) { [string]$clientNameHELO = "" } else { [string]$clientNameHELO = [string]::Join(",", $clientNameHELO) }
 
             [string]$mailFrom = foreach ($item in $groupData) { if ($item -match "^MAIL FROM:<(?'mailadress'\S+)>") { $Matches['mailadress'] } }
-            if (-not $mailFrom) { $mailFrom = "" } else { $mailFrom = [string]::Join(",", $mailFrom.trim() ) }
+            if (-not $mailFrom) { [string]$mailFrom = "" } else { [string]$mailFrom = [string]::Join(",", $mailFrom.trim() ) }
 
             [string]$rcptTo = foreach ($item in $groupData) { if ($item -match "^RCPT TO:<(?'mailadress'\S+)>") { $Matches['mailadress'] } }
-            if (-not $rcptTo) { $rcptTo = "" } else { $rcptTo = [string]::Join(",", $rcptTo.trim() ) }
+            if (-not $rcptTo) { [string]$rcptTo = "" } else { [string]$rcptTo = [string]::Join(",", $rcptTo.trim() ) }
 
             [string]$XOOrg = foreach ($item in $groupData) { if ($item -match "XOORG=(?'xoorg'\S+)") { $Matches['xoorg'] } }
-            if (-not $XOOrg) { $XOOrg = "" } else { $XOOrg = [string]::Join(",", $XOOrg.trim() ) }
+            if (-not $XOOrg) { [string]$XOOrg = "" } else { [string]$XOOrg = [string]::Join(",", $XOOrg.trim() ) }
 
-            [string]$SmtpId = foreach ($item in $groupData) { if ($item -match "^250\s2.6.0\s(?'SmtpId'\S+)") { $Matches['SmtpId'] } }
-            if (-not $SmtpId) { $SmtpId = "" } else { $SmtpId = [string]::Join(",", $SmtpId.trim().trim(">").trim("<") ) }
-
+            $smtpIdLine = $groupData -match "^250\s2.6.0\s<(?'SmtpId'\S+)"
             [timespan]$DeliveryDuration = [timespan]::new(0)
             [double]$deliveryBandwidth = 0
             [string]$RemoteServerHostName = ""
             [string]$InternalId = ""
             [string]$MailSize = ""
-            if ($SmtpId) {
-                [string[]]$RemoteServerHostName = foreach ($item in $groupData) { if ($item -match "^250\s2.6.0\s(?'SmtpId'\S+)") { $Matches['SmtpId'].split("@")[1] } }
-                if (-not $RemoteServerHostName) { $RemoteServerHostName = "" } else { $RemoteServerHostName = [string]::Join(",", $RemoteServerHostName.trim().trim(">") ) }
+            if ($smtpIdLine) {
+                [string[]]$SmtpIdRecords = foreach ($line in $smtpIdLine) { $line.trim("250 2.6.0 <").split(">")[0] }
+                if (-not $SmtpIdRecords) { [string]$SmtpId = "" } else { $SmtpId = [string]::Join(",", $SmtpIdRecords.trim() ) }
 
-                [string[]]$InternalId = foreach ($item in $groupData) { if ($item -match "^250\s2\.6\.0\s.*InternalId=(?'InternalId'\w+)") { $Matches['InternalId'] } }
-                if (-not $InternalId) { $InternalId = "" } else { $InternalId = [string]::Join(",", $XOOrg.trim() ) }
+                [string[]]$RemoteServerHostName = foreach ($item in $SmtpIdRecords) { $item.split("@")[1] }
+                if (-not $RemoteServerHostName) { [string]$RemoteServerHostName = "" } else { [string]$RemoteServerHostName = [string]::Join(",", $RemoteServerHostName ) }
 
-                [string[]]$MailSize = foreach ($item in $groupData) { if ($item -match "\w+(?=\sbytes\sin\s)") { $Matches[0] } }
-                if (-not $MailSize) { $MailSize = "" } else { $MailSize = [string]::Join(",", $MailSize.trim() ) }
+                [string[]]$InternalId = $smtpIdLine | ForEach-Object { ($_ -split "InternalId=")[1].split(",")[0] }
+                if (-not $InternalId) { [string]$InternalId = "" } else { [string]$InternalId = [string]::Join(",", $InternalId.trim() ) }
 
-                ForEach ($item in $groupData) {
-                    if ($item -match "(?<=\sbytes\sin\s)(\d|\.)+") {
-                        $DeliveryDuration = $DeliveryDuration + [timespan]::FromSeconds( [System.Convert]::ToDouble($Matches[0], [cultureinfo]::GetCultureInfo('en-us') ))
-                    }
+                [string[]]$MailSize = $smtpIdLine | ForEach-Object { ($_ -split " bytes in ")[0].split(" ")[-1] }
+                if (-not $MailSize) { [string]$MailSize = "" } else { [string]$MailSize = [string]::Join(",", $MailSize.trim() ) }
+
+                ForEach ($item in $smtpIdLine) {
+                    $DeliveryDuration = $DeliveryDuration + [timespan]::FromSeconds( [System.Convert]::ToDouble( (($item -split " bytes in ")[1].split(", ")[0]) , [cultureinfo]::GetCultureInfo('en-us') ))
                 }
-                ForEach ($item in $groupData) {
-                    if ($item -match "(?'duration'(\d*|,)+)(?=\sKB\/sec\sQueued\smail\sfor\sdelivery)") {
-                        $deliveryBandwidth = $deliveryBandwidth + [double]::Parse($Matches['duration'])
-                    }
+                ForEach ($item in $smtpIdLine) {
+                    $deliveryBandwidth = $deliveryBandwidth + [double]::Parse( (($item.TrimEnd(" KB/sec Queued mail for delivery") -split ", ")[-1]) )
                 }
             }
 
@@ -150,8 +157,6 @@ function global:Expand-LogRecord {
                 $TlsCertificateClient = foreach ($item in ($TlsRecords | where-Object context -Like "Remote certificat*").data) { ([string]$item).trim() }
                 if (-not $TlsCertificateClient) { $TlsCertificateClient = "" } else { $TlsCertificateClient = [string]::Join(",", $TlsCertificateClient) }
 
-                #if(($TlsRecords | Where-Object context -Like "*; Status='*").context -Match "(?<=TlsDomainCapabilities=')(?'TlsDomainCapabilities'\S+)'|(?<=Status=')(?'Status'\S+)'|(?<=Domain=')(?'Domain'\S+)'") {
-                #}
                 $TlsStatusRecord = ($TlsRecords | Where-Object context -Like "*; Status='*").context -Split "; "
                 $TlsDomainCapabilities = ("" + (($TlsStatusRecord | Where-Object { $_ -like "TlsDomainCapabilities=*" }) -split "=")[1] ).trim("'")
                 if (-not $TlsDomainCapabilities) { $TlsDomainCapabilities = "" } else { $TlsDomainCapabilities = [string]::Join(",", $TlsDomainCapabilities) }
@@ -179,9 +184,9 @@ function global:Expand-LogRecord {
             # construct output object
             $outputRecord = [PSCustomObject]@{
                 "PSTypeName"                     = "ExchangeLog.$($record.metadataHash['Log-type'].Replace(' ','')).Record.Expanded"
-                "LogFolder"                      = $File.Directory
-                "LogFileName"                    = $File.Name
-                $sessionIdName                   = $record.Name
+                "LogFolder"                      = $record.LogFolder
+                "LogFileName"                    = $record.LogFileName
+                $SessionIdName                   = $record.$SessionIdName
                 "DateStart"                      = ($record.Group | Sort-Object 'date-time')[0].'date-time' -as [datetime]
                 "DateEnd"                        = ($record.Group | Sort-Object 'date-time')[-1].'date-time' -as [datetime]
                 "SequenceCount"                  = $record.Group.count
@@ -227,18 +232,30 @@ function global:Expand-LogRecord {
                 "LogText"                        = $LogText
             }
 
-            foreach ($key in $metadataHash.Keys) {
-                $outputRecord | Add-Member -MemberType NoteProperty -Name $key -Value $metadataHash[$key] -Force
+            # add metadata attributes
+            foreach ($key in $record.metadataHash.Keys) {
+                if($key -like "Date") {
+                    $value = $record.metadataHash[$key] -as [datetime]
+                } else {
+                    $value = $record.metadataHash[$key]
+                }
+                $outputRecord | Add-Member -MemberType NoteProperty -Name $key -Value $value -Force
             }
-            #$null = $output.Add( $outputRecord )
-            $outputRecord
-        }
 
+            # output data
+            $outputRecord
+
+            if($ShowProgress) {
+                if(($i % $refreshInterval) -eq 0) {
+                    Write-Progress -Activity "Process logfile record " -Status "$($record.LogFileName) - $($SessionIdName): $($record.$SessionIdName) ($($i) / $($InputObject.count))" -PercentComplete ($i/$InputObject.count*100)
+                }
+                $i = $i + 1
+            }
+        }
     }
 
     end {
-
     }
 }
 
-#(Get-Command Expand-LogRecord).Visibility = "Private"
+(Get-Command Expand-LogRecord).Visibility = "Private"

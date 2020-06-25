@@ -56,69 +56,78 @@
             }
             if ($Recurse) { $options.Add("Recurse", $true) }
             if( $Filter ) { $options.Add("Filter", $Filter) }
-            (Get-ChildItem @options).FullName | Sort-Object | ForEach-Object { $null = $files.Add( $_ ) }
+            (Get-ChildItem @options).FullName | Sort-Object | ForEach-Object { [void]$files.Add( $_ ) }
         }
     }
 
     end {
         $recordCount = 0
-
         $files = $files | Sort-Object
+        Write-PSFMessage -Level Verbose -Message "Got $($files.count) file$(if($files.count -gt 1){"s"}) to process."
 
         $traceTimer = New-Object System.Diagnostics.Stopwatch
         $traceTimer.Start()
 
         # Import first file
-        $filePrevious = $files[0]
-        $resultPreviousFile = New-Object -TypeName "System.Collections.ArrayList"
-        #$resultPreviousFile = Import-LogData -File $filePrevious
-        foreach($record in (Import-LogData -File $filePrevious)) {
-            $null = $resultPreviousFile.Add($record)
+        if($files.Count -gt 1) {
+            $filePrevious = $files[0]
+        } else {
+            $filePrevious = $files
         }
+        $resultPreviousFile = New-Object -TypeName "System.Collections.ArrayList"
+        foreach($record in (Import-LogData -File $filePrevious)) { [void]$resultPreviousFile.Add($record) }
         $sessionIdName = Resolve-SessionIdName -LogType $resultPreviousFile[0].'Log-type'
-        #$resultPreviousFile.count
 
         # Import remaining files
+        Write-PSFMessage -Level Verbose -Message "Starting import on $($files.Count) remaining file(s)."
         $result = New-Object -TypeName "System.Collections.ArrayList"
         $jobList = New-Object -TypeName "System.Collections.ArrayList"
         for ($filecounter = 1; $filecounter -lt $files.Count; $filecounter++) {
+            #region process
             # import next file
             $fileCurrent = $files[$filecounter]
             $resultCurrentFile = New-Object -TypeName "System.Collections.ArrayList"
-            foreach($record in (Import-LogData -File $fileCurrent)) {
-                $null = $resultCurrentFile.Add($record)
-            }
-            #$resultCurrentFile = Import-LogData -File $fileCurrent
+            foreach($record in (Import-LogData -File $fileCurrent)) { [void]$resultCurrentFile.Add($record) }
 
             if($resultCurrentFile[0].'Log-type' -ne $resultPreviousFile[0].'Log-type') {
                 Stop-PSFFunction -Message "Incompatible logfile types ($($resultCurrentFile[0].'Log-type'), $($resultPreviousFile[0].'Log-type')) found! More then one type of logfile in folder '$($pathItem)'."
             }
 
-            # loop through previous and current file to check on fragmented session records in both files (sessions over midnight)
-            $overlapSessionIDs = Compare-Object -ReferenceObject $resultPreviousFile -DifferenceObject $resultCurrentFile -Property $sessionIdName -ExcludeDifferent -IncludeEqual
-            if($overlapSessionIDs) {
-                foreach ($overlapSessionId in $overlapSessionIDs.$sessionIdName) {
-                    $overlapRecordCurrentFile = $resultCurrentFile | Where-Object $sessionIdName -like $overlapSessionId
-                    $overlapRecordPreviousFile = $resultPreviousFile | Where-Object $sessionIdName -like $overlapSessionId
+            if($sessionIdName) {
+                # loop through previous and current file to check on fragmented session records in both files (sessions over midnight)
+                Write-PSFMessage -Level VeryVerbose -Message "Checking for overlapping log records on identifier '$($sessionIdName)' in file '$($filePrevious)' and  '$($fileCurrent)'"
+                $overlapSessionIDs = Compare-Object -ReferenceObject $resultPreviousFile -DifferenceObject $resultCurrentFile -Property $sessionIdName -ExcludeDifferent -IncludeEqual
+                if($overlapSessionIDs) {
+                    foreach ($overlapSessionId in $overlapSessionIDs.$sessionIdName) {
+                        Write-PSFMessage -Level VeryVerbose -Message "Found overlapping log record '$($overlapSessionId)'"
 
-                    # merge records
-                    $overlapRecordPreviousFileMerged = $overlapRecordPreviousFile
-                    $overlapRecordPreviousFileMerged.Group = $overlapRecordPreviousFile.Group + $overlapRecordCurrentFile.Group
+                        # get the record fragments from both logfiles
+                        $overlapRecordCurrentFile = $resultCurrentFile | Where-Object $sessionIdName -like $overlapSessionId
+                        $overlapRecordPreviousFile = $resultPreviousFile | Where-Object $sessionIdName -like $overlapSessionId
 
+                        # merge records
+                        $overlapRecordPreviousFileMerged = $overlapRecordPreviousFile
+                        $overlapRecordPreviousFileMerged.Group = $overlapRecordPreviousFile.Group + $overlapRecordCurrentFile.Group
 
-                    $resultCurrentFile.RemoveAt( $resultCurrentFile.IndexOf($overlapRecordCurrentFile) )
+                        # remove overlapping records from current logfile
+                        $resultCurrentFile.RemoveAt( $resultCurrentFile.IndexOf($overlapRecordCurrentFile) )
 
-                    $resultPreviousFile.RemoveAt( $resultPreviousFile.IndexOf($overlapRecordPreviousFile) )
-                    $resultPreviousFile.Add($overlapRecordPreviousFileMerged)
+                        # remove overlapping records from previous logfile
+                        $resultPreviousFile.RemoveAt( $resultPreviousFile.IndexOf($overlapRecordPreviousFile) )
+
+                        # add merged record into  previous logfile
+                        [void]$resultPreviousFile.Add($overlapRecordPreviousFileMerged)
+                    }
                 }
             }
 
             # output result
             $recordCount = $recordCount + $resultPreviousFile.count
-            $jobObject = Start-RSJob -Name "$($resultPreviousFile[0].LogFolder)\$($resultPreviousFile[0].LogFileName)" -FunctionsToImport Expand-LogRecord -ScriptBlock {
+            $jobObject = Start-RSJob -Name "$($resultPreviousFile[0].LogFolder)\$($resultPreviousFile[0].LogFileName)" -FunctionsToImport Expand-LogRecord -Verbose:$false -ScriptBlock {
                 Expand-LogRecord -InputObject $using:resultPreviousFile -sessionIdName $using:sessionIdName
             }
-            $null = $jobList.Add($jobObject)
+            Write-PSFMessage -Level Verbose -Message "Start runspace job '$($jobObject.Name)' (ID:$($jobObject.ID)) for processing $($resultPreviousFile.count) record(s)"
+            [void]$jobList.Add($jobObject)
 
             # put current file records in variable for previous file to check for further record fragments
             $filePrevious = $fileCurrent
@@ -127,29 +136,52 @@
             # progress status info
             if($files.count -lt 100) { $refreshInterval = 1 } else { $refreshInterval = [math]::Round($files.count / 100) }
             if(($filecounter % $refreshInterval) -eq 0) {
-                Write-Progress -Activity "Import logfiles in $($resultPreviousFile[0].LogFolder)" -Status "$($resultPreviousFile[0].LogFileName) ($($filecounter) / $($files.count))" -PercentComplete ($filecounter/$files.count*100)
-
-                $jobs = $jobList | Get-RSJob -State Completed -ErrorAction SilentlyContinue | Sort-Object ID
+                Write-PSFMessage -Level System -Message "Procesed $refreshInterval files... Going to update progress status"
+                $jobs = Get-RSJob -State Completed -ErrorAction SilentlyContinue -Verbose:$false | Sort-Object ID
                 if($jobs){
-                    $jobs | Receive-RSJob | ForEach-Object { $null = $result.Add( $_ ) }
+                    $recordsProcessed = $jobs | Receive-RSJob -Verbose:$false
+                    $recordsProcessed | ForEach-Object {
+                        [void]$_.psobject.TypeNames.Remove('Selected.RSJob')
+                        $_
+                        [void]$result.Add( $_ )
+                    }
+                    Write-PSFMessage -Level Verbose -Message "Receiving $($jobs.Count) completed runspace job(s) with $($recordsProcessed.count) processed records"
                     foreach ($job in $jobs) {
                         $jobList.RemoveAt( $jobList.IndexOf($job) )
-                        $job | Remove-RSJob
+                        $job | Remove-RSJob -Force -Verbose:$false
                     }
                 }
+                Write-Progress -Activity "Import logfiles in $($resultPreviousFile[0].LogFolder) | Currently working runspaces: $($jobList.count) | Records already processed: $($result.count) | Time elapsed: $($traceTimer.Elapsed)" -Status "$($resultPreviousFile[0].LogFileName) ($($filecounter) / $($files.count))" -PercentComplete ($filecounter/$files.count*100)
             }
+            #endregion process
         }
-        $recordCount = $recordCount + $filePrevious.count
+        $recordCount = $recordCount + $resultPreviousFile.count
+
+        # processing last remaining file
+        $jobObject = Start-RSJob -Name "$($resultPreviousFile[0].LogFolder)\$($resultPreviousFile[0].LogFileName)" -FunctionsToImport Expand-LogRecord -Verbose:$false -ScriptBlock {
+            Expand-LogRecord -InputObject $using:resultPreviousFile -sessionIdName $using:sessionIdName
+        }
+        Write-PSFMessage -Level Verbose -Message "Start runspace job '$($jobObject.Name)' (ID:$($jobObject.ID)) for processing $($resultPreviousFile.count) record(s)"
+        [void]$jobList.Add($jobObject)
+
+        # waiting for completion of all runspaces
+        Write-PSFMessage -Level Verbose -Message "Finished processing $($files.Count) file(s) with overall $($recordCount) record(s). Awaiting $($jobList.count) running runspaces to complete record processing."
         do {
-            $open = $jobObject | Get-RSJob | Where-Object State -NotLike "Completed"
+            $open = Get-RSJob -Verbose:$false | Where-Object State -NotLike "Completed"
             Start-Sleep -Milliseconds 100
         } while ($open)
+        Start-Sleep -Milliseconds 200
 
-        $jobObject | Get-RSJob | Sort-Object ID | Receive-RSJob | ForEach-Object { $null = $result.Add( $_ ) }
-        Expand-LogRecord -InputObject $resultPreviousFile -sessionIdName $sessionIdName | ForEach-Object { $null = $result.Add( $_ ) }
-        $jobObject | Get-RSJob | Remove-RSJob
+        Write-PSFMessage -Level Verbose -Message "All runspaces completed. Gathering results"
+        Get-RSJob -Verbose:$false | Sort-Object ID | Receive-RSJob -Verbose:$false | ForEach-Object {
+            [void]$_.psobject.TypeNames.Remove('Selected.RSJob')
+            $_
+            [void]$result.Add( $_ )
+        }
 
-        $result
+        Get-RSJob -Verbose:$false | Remove-RSJob -Verbose:$false
+
+        #$result
 
         $traceTimer.Stop()
         Write-PSFMessage -Level Significant -Message "Duration on parsing $($files.count) file(s) with $($result.count) records: $($traceTimer.Elapsed)"
