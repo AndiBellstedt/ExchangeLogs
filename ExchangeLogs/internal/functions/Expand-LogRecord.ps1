@@ -52,17 +52,16 @@ function global:Expand-LogRecord {
             $ServerOptions = foreach ($item in $groupData) { if ($item -match "^250\s\s\S+\sHello\s\[\S+]\s(?'ServerOptions'(\S|\s)+)") { $Matches['ServerOptions'] } }
             if (-not $ServerOptions) { [string]$ServerOptions = "" } else { [string]$ServerOptions = [string]::Join(",", $ServerOptions) }
 
-            [string]$clientNameHELO = ($record.Group | Where-Object data -like "EHLO *").data
-            $clientNameHELO = $clientNameHELO.trim("EHLO ") | Select-Object -Unique
+            $clientNameHELO = ($record.Group | Where-Object data -like "EHLO *").data | ForEach-Object { if($_) {$_.trim("EHLO ")} } | Select-Object -Unique
             if (-not $clientNameHELO) { [string]$clientNameHELO = "" } else { [string]$clientNameHELO = [string]::Join(",", $clientNameHELO) }
 
-            [string]$mailFrom = foreach ($item in $groupData) { if ($item -match "^MAIL FROM:<(?'mailadress'\S+)>") { $Matches['mailadress'] } }
+            [string[]]$mailFrom = foreach ($item in $groupData) { if ($item -match "^MAIL FROM:<(?'mailadress'\S+)>") { $Matches['mailadress'] } }
             if (-not $mailFrom) { [string]$mailFrom = "" } else { [string]$mailFrom = [string]::Join(",", $mailFrom.trim() ) }
 
-            [string]$rcptTo = foreach ($item in $groupData) { if ($item -match "^RCPT TO:<(?'mailadress'\S+)>") { $Matches['mailadress'] } }
+            [string[]]$rcptTo = foreach ($item in $groupData) { if ($item -match "^RCPT TO:<(?'mailadress'\S+)>") { $Matches['mailadress'] } }
             if (-not $rcptTo) { [string]$rcptTo = "" } else { [string]$rcptTo = [string]::Join(",", $rcptTo.trim() ) }
 
-            [string]$XOOrg = foreach ($item in $groupData) { if ($item -match "XOORG=(?'xoorg'\S+)") { $Matches['xoorg'] } }
+            [string[]]$XOOrg = foreach ($item in $groupData) { if ($item -match "XOORG=(?'xoorg'\S+)") { $Matches['xoorg'] } }
             if (-not $XOOrg) { [string]$XOOrg = "" } else { [string]$XOOrg = [string]::Join(",", $XOOrg.trim() ) }
 
             $smtpIdLine = $groupData -match "^250\s2.6.0\s<(?'SmtpId'\S+)"
@@ -183,7 +182,7 @@ function global:Expand-LogRecord {
 
             # construct output object
             $outputRecord = [PSCustomObject]@{
-                "PSTypeName"                     = "ExchangeLog.$($record.metadataHash['Log-type'].Replace(' ','')).Record.Expanded"
+                "PSTypeName"                     = "ExchangeLog.$($record.metadataHash['Log-type'].Replace(' ','')).Record"
                 "LogFolder"                      = $record.LogFolder
                 "LogFileName"                    = $record.LogFileName
                 $SessionIdName                   = $record.$SessionIdName

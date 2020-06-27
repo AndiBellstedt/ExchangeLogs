@@ -44,7 +44,7 @@
         foreach ($group in ($records | Group-Object $sessionIdName)) {
             $null = $output.Add(
                 [PSCustomObject]@{
-                    "PSTypeName" = "ExchangeLog.$($metadataHash['Log-type'].Replace(' ','')).Record"
+                    "PSTypeName" = "ExchangeLog.$($metadataHash['Log-type'].Replace(' ','')).TypedRecord"
                     $sessionIdName = $group.Name
                     "Group" = $group.Group
                 }

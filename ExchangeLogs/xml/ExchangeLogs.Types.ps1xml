@@ -23,7 +23,7 @@
     -->
 
     <Type>
-        <Name>ExchangeLog.SMTPReceiveProtocolLog.Record</Name>
+        <Name>ExchangeLog.SMTPReceiveProtocolLog.TypedRecord</Name>
         <Members>
             <ScriptProperty>
                 <Name>DateLogFile</Name>
