@@ -1,16 +1,75 @@
 ﻿<?xml version="1.0" encoding="utf-16"?>
 <Configuration>
     <ViewDefinitions>
-        <!-- Foo.Bar -->
         <View>
-            <Name>ExchangeLog.SMTPReceiveProtocolLog.Record_table</Name>
+            <Name>ExchangeLog.SMTPProtocolLog.Record_table</Name>
             <ViewSelectedBy>
-                <TypeName>ExchangeLog.SMTPReceiveProtocolLog.TypedRecord</TypeName>
                 <TypeName>ExchangeLog.SMTPReceiveProtocolLog.Record</TypeName>
+                <TypeName>ExchangeLog.SMTPSendProtocolLog.Record</TypeName>
             </ViewSelectedBy>
             <TableControl>
-                <AutoSize />
+                <!-- <AutoSize /> -->
                 <TableHeaders>
+                    <TableColumnHeader></TableColumnHeader>
+                    <TableColumnHeader></TableColumnHeader>
+                    <TableColumnHeader></TableColumnHeader>
+                    <TableColumnHeader></TableColumnHeader>
+                    <TableColumnHeader></TableColumnHeader>
+                    <TableColumnHeader></TableColumnHeader>
+                    <TableColumnHeader>
+                        <Label>AuthEnabled</Label>
+                    </TableColumnHeader>
+                    <TableColumnHeader></TableColumnHeader>
+                    <TableColumnHeader></TableColumnHeader>
+                    <TableColumnHeader>
+                        <Label>SeqCount</Label>
+                    </TableColumnHeader>
+                    <TableColumnHeader></TableColumnHeader>
+                    <TableColumnHeader></TableColumnHeader>
+                    <TableColumnHeader>
+                        <Label>LPort</Label>
+                    </TableColumnHeader>
+                    <TableColumnHeader></TableColumnHeader>
+                    <TableColumnHeader>
+                        <Label>RPort</Label>
+                    </TableColumnHeader>
+                    <TableColumnHeader></TableColumnHeader>
+                    <TableColumnHeader></TableColumnHeader>
+                    <TableColumnHeader>
+                        <Label>ConnectorNameShort</Label>
+                    </TableColumnHeader>
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
+                    <TableColumnHeader />
                     <TableColumnHeader />
                     <TableColumnHeader />
                     <TableColumnHeader />
@@ -28,15 +87,17 @@
                     <TableRowEntry>
                         <TableColumnItems>
                             <TableColumnItem>
+                                <Alignment>Left</Alignment>
                                 <PropertyName>DateStart</PropertyName>
                             </TableColumnItem>
                             <TableColumnItem>
-                                <PropertyName>session-Id</PropertyName>
+                                <PropertyName>Session-Id</PropertyName>
                             </TableColumnItem>
                             <TableColumnItem>
                                 <PropertyName>ServerName</PropertyName>
                             </TableColumnItem>
                             <TableColumnItem>
+                                <Alignment>Left</Alignment>
                                 <PropertyName>ConnectorName</PropertyName>
                             </TableColumnItem>
                             <TableColumnItem>
@@ -46,7 +107,7 @@
                                 <PropertyName>RcptTo</PropertyName>
                             </TableColumnItem>
                             <TableColumnItem>
-                                <PropertyName>FinalizeMessage</PropertyName>
+                                <PropertyName>AuthenticationEnabled</PropertyName>
                             </TableColumnItem>
                             <TableColumnItem>
                                 <PropertyName>TlsEnabled</PropertyName>
@@ -55,13 +116,165 @@
                                 <PropertyName>TlsProtocol</PropertyName>
                             </TableColumnItem>
                             <TableColumnItem>
-                                <PropertyName>AuthenticationEnabled</PropertyName>
+                                <PropertyName>SequenceCount</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <Alignment>Right</Alignment>
+                                <PropertyName>DateEnd</PropertyName>
+                                <FormatString>HH:mm:ss</FormatString>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>LocalIP</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>LocalPort</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>RemoteIP</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>RemotePort</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>ServerNameHELO</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>ClientNameHELO</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>ConnectorNameWithoutServerName</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>ConnectorID</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>RemoteServerHostName</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>XOOrg</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>MailSize</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>DeliveryBandwidth</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>DeliveryDuration</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>TarpitDetect</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>TarpitDuration</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>TarpitMessage</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>AuthenticationType</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>AuthenticationUser</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>AuthenticationMessage</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>TlsAlgorithmEncryption</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>TlsAlgorithmMacHash</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>TlsAlgorithmKeyExchange</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>TlsCertificateServerIssuer</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>TlsCertificateServerNotAfter</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>TlsCertificateServerNotBefore</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>TlsCertificateServerSAN</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>TlsCertificateServerSerial</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>TlsCertificateServerThumbprint</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>TlsCertificateRemoteIssuer</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>TlsCertificateRemoteNotAfter</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>TlsCertificateRemoteNotBefore</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>TlsCertificateRemoteSAN</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>TlsCertificateRemoteSerial</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>TlsCertificateRemoteThumbprint</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>TlsStatus</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>TlsDomain</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>TlsDomainCapabilities</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>FinalizeMessage</PropertyName>
                             </TableColumnItem>
                             <TableColumnItem>
                                 <PropertyName>InternalId</PropertyName>
                             </TableColumnItem>
                             <TableColumnItem>
+                                <PropertyName>SmtpId</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>ServerOptions</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>TlsCrypto</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>TlsStatusRecord</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>TlsCertificateServer</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>TlsCertificateRemote</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
                                 <PropertyName>LogFileName</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Log-type</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>DateLogFile</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>LogFolder</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Software</PropertyName>
+                            </TableColumnItem>
+                            <TableColumnItem>
+                                <PropertyName>Version</PropertyName>
                             </TableColumnItem>
                         </TableColumnItems>
                     </TableRowEntry>
@@ -70,10 +283,10 @@
         </View>
 
         <View>
-            <Name>ExchangeLog.SMTPReceiveProtocolLog.Record_list</Name>
+            <Name>ExchangeLog.SMTPProtocolLog.Record_list</Name>
             <ViewSelectedBy>
-                <TypeName>ExchangeLog.SMTPReceiveProtocolLog.TypedRecord</TypeName>
                 <TypeName>ExchangeLog.SMTPReceiveProtocolLog.Record</TypeName>
+                <TypeName>ExchangeLog.SMTPSendProtocolLog.Record</TypeName>
             </ViewSelectedBy>
             <ListControl>
                 <ListEntries>
@@ -98,7 +311,7 @@
                                 <PropertyName>DateLogFile</PropertyName>
                             </ListItem>
                             <ListItem>
-                                <PropertyName>session-Id</PropertyName>
+                                <PropertyName>Session-Id</PropertyName>
                             </ListItem>
                             <ListItem>
                                 <PropertyName>DateStart</PropertyName>
@@ -107,10 +320,10 @@
                                 <PropertyName>DateEnd</PropertyName>
                             </ListItem>
                             <ListItem>
-                                <PropertyName>SequenceCount</PropertyName>
+                                <PropertyName>ServerName</PropertyName>
                             </ListItem>
                             <ListItem>
-                                <PropertyName>ServerName</PropertyName>
+                                <PropertyName>SequenceCount</PropertyName>
                             </ListItem>
                             <ListItem>
                                 <PropertyName>ConnectorName</PropertyName>
@@ -152,9 +365,6 @@
                                 <PropertyName>XOOrg</PropertyName>
                             </ListItem>
                             <ListItem>
-                                <PropertyName>InternalId</PropertyName>
-                            </ListItem>
-                            <ListItem>
                                 <PropertyName>MailSize</PropertyName>
                             </ListItem>
                             <ListItem>
@@ -185,22 +395,58 @@
                                 <PropertyName>AuthenticationMessage</PropertyName>
                             </ListItem>
                             <ListItem>
-                                <PropertyName>Tlsenabled</PropertyName>
+                                <PropertyName>TlsEnabled</PropertyName>
+                            </ListItem>
+                            <ListItem>
+                                <PropertyName>TlsProtocol</PropertyName>
                             </ListItem>
                             <ListItem>
                                 <PropertyName>TlsAlgorithmEncryption</PropertyName>
                             </ListItem>
                             <ListItem>
-                                <PropertyName>TlsAlgorithmKeyExchange</PropertyName>
-                            </ListItem>
-                            <ListItem>
                                 <PropertyName>TlsAlgorithmMacHash</PropertyName>
                             </ListItem>
                             <ListItem>
-                                <PropertyName>TlsCertificateClient</PropertyName>
+                                <PropertyName>TlsAlgorithmKeyExchange</PropertyName>
                             </ListItem>
                             <ListItem>
-                                <PropertyName>TlsCertificateServer</PropertyName>
+                                <PropertyName>TlsCertificateServerIssuer</PropertyName>
+                            </ListItem>
+                            <ListItem>
+                                <PropertyName>TlsCertificateServerNotAfter</PropertyName>
+                            </ListItem>
+                            <ListItem>
+                                <PropertyName>TlsCertificateServerNotBefore</PropertyName>
+                            </ListItem>
+                            <ListItem>
+                                <PropertyName>TlsCertificateServerSAN</PropertyName>
+                            </ListItem>
+                            <ListItem>
+                                <PropertyName>TlsCertificateServerSerial</PropertyName>
+                            </ListItem>
+                            <ListItem>
+                                <PropertyName>TlsCertificateServerThumbprint</PropertyName>
+                            </ListItem>
+                            <ListItem>
+                                <PropertyName>TlsCertificateRemoteIssuer</PropertyName>
+                            </ListItem>
+                            <ListItem>
+                                <PropertyName>TlsCertificateRemoteNotAfter</PropertyName>
+                            </ListItem>
+                            <ListItem>
+                                <PropertyName>TlsCertificateRemoteNotBefore</PropertyName>
+                            </ListItem>
+                            <ListItem>
+                                <PropertyName>TlsCertificateRemoteSAN</PropertyName>
+                            </ListItem>
+                            <ListItem>
+                                <PropertyName>TlsCertificateRemoteSerial</PropertyName>
+                            </ListItem>
+                            <ListItem>
+                                <PropertyName>TlsCertificateRemoteThumbprint</PropertyName>
+                            </ListItem>
+                            <ListItem>
+                                <PropertyName>TlsStatus</PropertyName>
                             </ListItem>
                             <ListItem>
                                 <PropertyName>TlsDomain</PropertyName>
@@ -209,13 +455,10 @@
                                 <PropertyName>TlsDomainCapabilities</PropertyName>
                             </ListItem>
                             <ListItem>
-                                <PropertyName>TlsProtocol</PropertyName>
-                            </ListItem>
-                            <ListItem>
-                                <PropertyName>TlsStatus</PropertyName>
-                            </ListItem>
-                            <ListItem>
                                 <PropertyName>FinalizeMessage</PropertyName>
+                            </ListItem>
+                            <ListItem>
+                                <PropertyName>InternalId</PropertyName>
                             </ListItem>
                             <ListItem>
                                 <PropertyName>SmtpId</PropertyName>
@@ -226,7 +469,16 @@
                             <ListItem>
                                 <PropertyName>TlsCrypto</PropertyName>
                             </ListItem>
+                            <ListItem>
+                                <PropertyName>TlsStatusRecord</PropertyName>
+                            </ListItem>
                             <!--
+                            <ListItem>
+                                <PropertyName>TlsCertificateServer</PropertyName>
+                            </ListItem>
+                            <ListItem>
+                                <PropertyName>TlsCertificateRemote</PropertyName>
+                            </ListItem>
                             <ListItem>
                                 <PropertyName>LogText</PropertyName>
                             </ListItem>
