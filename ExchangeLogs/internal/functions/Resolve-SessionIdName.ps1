@@ -22,7 +22,7 @@
     switch ($LogType) {
         {$_ -in "SMTP Receive Protocol Log", "SMTP Send Protocol Log"} { "session-Id" }
         {$_ -in "IMAP4 Log", "POP3 Log"} { "sessionId" }
-        {$_ -in "Message Tracking Log"} { }
+        {$_ -in "Message Tracking Log"} { "message-id" }
         Default { Write-Warning "Unknown LogType"}
     }
 }
