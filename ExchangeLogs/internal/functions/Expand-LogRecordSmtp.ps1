@@ -99,24 +99,26 @@ function global:Expand-LogRecordSmtp {
                 [string[]]$_smtpIdRecords = foreach ($line in $smtpIdLine) { $line.trim("250 2.6.0 <").split(">")[0] }
                 if ($_smtpIdRecords) { $SmtpId = [string]::Join(",", $_smtpIdRecords.trim() ) } else { [string]$smtpId = "" }
 
-                [string[]]$_remoteServerHostName = foreach ($item in $smtpIdRecords) { $item.split("@")[1] }
+                [string[]]$_remoteServerHostName = foreach ($item in $_smtpIdRecords) { $item.split("@")[1] }
                 if ($_remoteServerHostName) { [string]$remoteServerHostName = [string]::Join(",", $_remoteServerHostName ) } else { [string]$remoteServerHostName = "" }
 
                 [string[]]$_internalId = $smtpIdLine | ForEach-Object { ($_ -split "InternalId=")[1].split(",")[0] }
                 if ($_internalId) { [string]$internalId = [string]::Join(",", $_internalId.trim() ) } else { [string]$internalId = "" }
 
-                [string[]]$_mailSize = $smtpIdLine | ForEach-Object { ($_ -split " bytes in ")[0].split(" ")[-1] }
-                if ($_mailSize) {
-                    #$mailSize = [string]::Join(",", $_mailSize.trim() )
-                    $mailSize = ($_mailSize | Measure-Object -Sum).Sum
-                } else { [int]$mailSize = 0 }
+                if($smtpIdLine -like "bytes in") {
+                    [string[]]$_mailSize = $smtpIdLine | ForEach-Object { ($_ -split " bytes in ")[0].split(" ")[-1] }
+                    if ($_mailSize) {
+                        #$mailSize = [string]::Join(",", $_mailSize.trim() )
+                        $mailSize = ($_mailSize | Measure-Object -Sum).Sum
+                    } else { [int]$mailSize = 0 }
 
-                ForEach ($item in $smtpIdLine) {
-                    $deliveryDuration = $deliveryDuration + [timespan]::FromSeconds( [System.Convert]::ToDouble( (($item -split " bytes in ")[1].split(", ")[0]) , [cultureinfo]::GetCultureInfo('en-us') ))
-                }
-                ForEach ($item in $smtpIdLine) {
-                    $deliveryBandwidth = $deliveryBandwidth + [double]::Parse( (($item.TrimEnd(" KB/sec Queued mail for delivery") -split ", ")[-1]) )
-                    $deliveryBandwidth = [math]::Round( ($deliveryBandwidth / $smtpIdLine.count), 3 )
+                    ForEach ($item in $smtpIdLine) {
+                        $deliveryDuration = $deliveryDuration + [timespan]::FromSeconds( [System.Convert]::ToDouble( (($item -split " bytes in ")[1].split(", ")[0]) , [cultureinfo]::GetCultureInfo('en-us') ))
+                    }
+                    ForEach ($item in $smtpIdLine) {
+                        $deliveryBandwidth = $deliveryBandwidth + [double]::Parse( (($item.TrimEnd(" KB/sec Queued mail for delivery") -split ", ")[-1]) )
+                        $deliveryBandwidth = [math]::Round( ($deliveryBandwidth / $smtpIdLine.count), 3 )
+                    }
                 }
             }
 

@@ -1,4 +1,8 @@
 ﻿# Changelog
+## 1.1.1 (2020-06-28)
+- Fix: Get-ELExchangeLog
+    - Fixing internal record extraction on special cases.
+
 ## 1.1.0 (2020-06-28)
 - Upd: Get-ELExchangeLog
     - Add support for importing and interpreting SMTP send log files.
