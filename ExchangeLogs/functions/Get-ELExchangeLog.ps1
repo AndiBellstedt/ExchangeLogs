@@ -127,7 +127,7 @@
             if ($sessionIdName) {
                 # loop through previous and current file to check on fragmented session records in both files (sessions over midnight)
                 Write-PSFMessage -Level VeryVerbose -Message "Checking for overlapping log records on identifier '$($sessionIdName)' in file '$($filePrevious)' and  '$($fileCurrent)'"
-                $overlapSessionIDs = Compare-Object -ReferenceObject $resultPreviousFile -DifferenceObject $resultCurrentFile -Property $sessionIdName -ExcludeDifferent -IncludeEqual
+                $overlapSessionIDs = Compare-Object -ReferenceObject $resultPreviousFile[-1..-20] -DifferenceObject $resultCurrentFile[0..20] -Property $sessionIdName -ExcludeDifferent -IncludeEqual
                 if ($overlapSessionIDs) {
                     foreach ($overlapSessionId in $overlapSessionIDs.$sessionIdName) {
                         Write-PSFMessage -Level VeryVerbose -Message "Found overlapping log record '$($overlapSessionId)'"
@@ -161,10 +161,16 @@
                     }
                 }
                 "IMAP4Log" {
-                    Write-PSFMessage -Level Host -Message "$($LogType) currently not supported."
+                    #Write-PSFMessage -Level Host -Message "$($LogType) currently not supported."
+                    $jobObject = Start-RSJob -Batch $batchJobId -Name "$($resultPreviousFile[0].LogFolder)\$($resultPreviousFile[0].LogFileName)" -FunctionsToImport Expand-LogRecordPopImap -Verbose:$false -ScriptBlock {
+                        Expand-LogRecordPopImap -InputObject $using:resultPreviousFile -sessionIdName $using:sessionIdName
+                    }
                 }
                 "POP3Log" {
-                    Write-PSFMessage -Level Host -Message "$($LogType) currently not supported."
+                    #Write-PSFMessage -Level Host -Message "$($LogType) currently not supported."
+                    $jobObject = Start-RSJob -Batch $batchJobId -Name "$($resultPreviousFile[0].LogFolder)\$($resultPreviousFile[0].LogFileName)" -FunctionsToImport Expand-LogRecordPopImap -Verbose:$false -ScriptBlock {
+                        Expand-LogRecordPopImap -InputObject $using:resultPreviousFile -sessionIdName $using:sessionIdName
+                    }
                 }
                 "MessageTrackingLog" {
                     Write-PSFMessage -Level Host -Message "$($LogType) currently not supported."
@@ -212,10 +218,16 @@
                 }
             }
             "IMAP4Log" {
-                Write-PSFMessage -Level Host -Message "$($LogType) currently not supported."
+                #Write-PSFMessage -Level Host -Message "$($LogType) currently not supported."
+                $jobObject = Start-RSJob -Batch $batchJobId -Name "$($resultPreviousFile[0].LogFolder)\$($resultPreviousFile[0].LogFileName)" -FunctionsToImport Expand-LogRecordPopImap -Verbose:$false -ScriptBlock {
+                    Expand-LogRecordPopImap -InputObject $using:resultPreviousFile -sessionIdName $using:sessionIdName
+                }
             }
             "POP3Log" {
-                Write-PSFMessage -Level Host -Message "$($LogType) currently not supported."
+                #Write-PSFMessage -Level Host -Message "$($LogType) currently not supported."
+                $jobObject = Start-RSJob -Batch $batchJobId -Name "$($resultPreviousFile[0].LogFolder)\$($resultPreviousFile[0].LogFileName)" -FunctionsToImport Expand-LogRecordPopImap -Verbose:$false -ScriptBlock {
+                    Expand-LogRecordPopImap -InputObject $using:resultPreviousFile -sessionIdName $using:sessionIdName
+                }
             }
             "MessageTrackingLog" {
                 Write-PSFMessage -Level Host -Message "$($LogType) currently not supported."
