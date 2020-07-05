@@ -42,7 +42,7 @@ function global:Expand-LogRecordSmtp {
         }
 
         foreach ($record in $InputObject) {
-            # unsure qualified session in log
+            # assure qualified session in log
             $_startIndicator = $record.Group | Where-Object Event -eq "+"
             $_stopIndicator = $record.Group | Where-Object Event -eq "-"
             if((-not $_startIndicator) -or (-not $_stopIndicator)) {
@@ -324,10 +324,10 @@ function global:Expand-LogRecordSmtp {
                 "ServerName"                     = $ServerName
                 "ConnectorName"                  = $ConnectorName
                 "ConnectorNameWithoutServerName" = $ConnectorNameWithoutServerName
-                "LocalIP"                        = $localEndpoint.split(":")[0]
-                "LocalPort"                      = $localEndpoint.split(":")[1]
-                "RemoteIP"                       = $remoteEndpoint.split(":")[0]
-                "RemotePort"                     = $remoteEndpoint.split(":")[1]
+                "LocalIP"                        = $localEndpoint -replace ":$([string]$localEndpoint.split(":")[-1])", ""
+                "LocalPort"                      = $localEndpoint.split(":")[-1]
+                "RemoteIP"                       = $remoteEndpoint -replace ":$([string]$remoteEndpoint.split(":")[-1])", ""
+                "RemotePort"                     = $remoteEndpoint.split(":")[-1]
                 "ServerNameHELO"                 = $ServerNameHELO
                 "ServerOptions"                  = $ServerOptions
                 "ClientNameHELO"                 = $clientNameHELO
