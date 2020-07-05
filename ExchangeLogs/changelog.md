@@ -1,4 +1,11 @@
 ﻿# Changelog
+## 1.2.0 (2020-07-05)
+- New: Get-ELExchangeLog
+    - Add POP3 und IMAP logfile support
+- Fix: Get-ELExchangeLog
+    - Minor fixes on some logging circumstances were leading to errors -> Now, the function works arround this behaviour
+    - Fix an issue on IPv6 address and port interpretation
+
 ## 1.1.1 (2020-06-28)
 - Fix: Get-ELExchangeLog
     - Fixing internal record extraction on special cases.
