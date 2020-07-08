@@ -1,4 +1,4 @@
-function global:Expand-LogRecordSmtp {
+﻿function global:Expand-LogRecordSmtp {
     <#
     .SYNOPSIS
         Expand the data from records group into a flat data record

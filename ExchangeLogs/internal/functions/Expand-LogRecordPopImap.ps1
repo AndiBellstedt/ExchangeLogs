@@ -1,4 +1,4 @@
-function global:Expand-LogRecordPopImap {
+﻿function global:Expand-LogRecordPopImap {
     <#
     .SYNOPSIS
         Expand the data from records group into a flat data record
