@@ -1,8 +1,6 @@
 ﻿# Description
 
-Insert a useful description for the ExchangeLogs project here.
-
-Remember, it's the first thing a visitor will see.
+Module for parsing exchange transport log files on further investigation
 
 # Project Setup Instructions
 ## Working with the layout
