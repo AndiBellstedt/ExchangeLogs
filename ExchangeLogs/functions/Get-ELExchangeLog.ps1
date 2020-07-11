@@ -33,6 +33,7 @@
         Return records from all files in the current and all subfolders.
 #>
     [CmdletBinding()]
+    [Alias('gel')]
     param (
         [Parameter(Mandatory = $true, Position = 0, ValueFromPipeline = $true, ValueFromPipelineByPropertyName = $true)]
         [Alias('FullName')]

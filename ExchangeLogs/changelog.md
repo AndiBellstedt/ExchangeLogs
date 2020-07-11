@@ -1,4 +1,14 @@
 ﻿# Changelog
+## 1.2.1 (2020-07-11)
+- Fix: Get-ELExchangeLog
+    - Minor fixes on some logging circumstances were leading to errors -> Now, the function works arround this behaviour
+- Upd: Get-ELExchangeLog
+    - POP3 and IMAP logfiles got format data to optimize output to console with Format-List, Format-Table and Out-Gridview
+    - Add alias 'gel' on command 'Get-ELExchangeLog'
+- Upd: general
+    - add module logo
+    - add descriptions and a little bit of documentation
+
 ## 1.2.0 (2020-07-05)
 - New: Get-ELExchangeLog
     - Add POP3 und IMAP logfile support
