@@ -2,13 +2,13 @@ pool:
   name: Hosted VS2017
 steps:
 - task: PowerShell@2
-  displayName: Prerequisites
+  displayName: Ensure prerequisites
   inputs:
     targetType: filePath
     filePath: './build/vsts-prerequisites.ps1'
 
 - task: PowerShell@2
-  displayName: Validate
+  displayName: Validate code compliance
   inputs:
     targetType: filePath
     filePath: './build/vsts-validate.ps1'
