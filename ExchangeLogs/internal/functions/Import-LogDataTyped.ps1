@@ -15,13 +15,14 @@
         Return the csv records as grouped records by SessionID
 #>
     [CmdletBinding()]
+    [OutputType([System.Collections.ArrayList])]
     param (
         $File
     )
 
     # Get content from logfile
     $File = Get-ChildItem -Path $File -File -ErrorAction Stop
-    Write-Verbose "Get content from logfile: $($File.Fullname)"
+    Write-PSFMessage -Level Verbose -Message "Get content from logfile: $($File.Fullname)"
     $content = $File | Get-Content
 
     # split metadata and logcontent (first lines fo logfile)
@@ -63,7 +64,7 @@
     }
     $output | Add-Member -MemberType NoteProperty -Name "LogFileName" -Value $File.Name -Force
     $output | Add-Member -MemberType NoteProperty -Name "LogFolder" -Value $File.Directory -Force
-    Write-Verbose "Finished logfile $($File.Name). Found $($output.count) recors"
+    Write-PSFMessage -Level VeryVerbose -Message "Finished logfile $($File.Name). Found $($output.count) recors"
 
     # output data to the pipeline
     $output

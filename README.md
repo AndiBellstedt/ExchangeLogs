@@ -1,31 +1,46 @@
-﻿# Description
+﻿![logo][]
+# ExchangeLogs - Getting the insides
 
-Insert a useful description for the ExchangeLogs project here.
+A PowerShell module for parsing exchange transport log files on further investigation.
 
-Remember, it's the first thing a visitor will see.
+Basically, the module only contains only one command:
 
-# Project Setup Instructions
-## Working with the layout
+    Get-ELExchangeLog
 
-- Don't touch the psm1 file
-- Place functions you export in `functions/` (can have subfolders)
-- Place private/internal functions invisible to the user in `internal/functions` (can have subfolders)
-- Don't add code directly to the `postimport.ps1` or `preimport.ps1`.
-  Those files are designed to import other files only.
-- When adding files & folders, make sure they are covered by either `postimport.ps1` or `preimport.ps1`.
-  This adds them to both the import and the build sequence.
+This command takes single logfile, hole folders or folder structures with logfiles, parse trough the files and put out an valid an flatten parseable object.
+Anyboday, who tried to read native transport log files in exchange, will know, how much it is worth to have an single line/ single object which can be exported to a csv, xml or spit out into an database for later analytical processing.
 
-## Setting up CI/CD
+## Usage
+Basically, the intended usage is a construct of
 
-> To create a PR validation pipeline, set up tasks like this:
+    dir *logfolder* | Get-ELExchangeLog | Export-CSV
 
-- Install Prerequisites (PowerShell Task; VSTS-Prerequisites.ps1)
-- Validate (PowerShell Task; VSTS-Validate.ps1)
-- Publish Test Results (Publish Test Results; NUnit format; Run no matter what)
+or somthing like
 
-> To create a build/publish pipeline, set up tasks like this:
+    $logRecords = dir *logfolder* | Get-ELExchangeLog
+    $logRecords | ft
+    $logRecords | ogv
+    $logRecords | select-object * -ExcludeProperty LogText | Out-GridView
 
-- Install Prerequisites (PowerShell Task; VSTS-Prerequisites.ps1)
-- Validate (PowerShell Task; VSTS-Validate.ps1)
-- Build (PowerShell Task; VSTS-Build.ps1)
-- Publish Test Results (Publish Test Results; NUnit format; Run no matter what)
+Due to mostly heavy data activity in the logfiles/ -folders, it is not recommended, to use Get-ELExchangeLog in a repetitive manner.
+Better put the result into a variable an work with the results in the variable.
+
+## Installation
+Install the module from the PowerShell Gallery (systemwide):
+
+    Install-Module ExchangeLogs
+
+or install it only for your user:
+
+    Install-Module ExchangeLogs -Scope CurrentUser
+
+## Notes
+All cmdlets are build with
+- powershell regular verbs
+- pipeling availabilties
+- comprehensive logging on verbose and debug channel
+
+> Project is still in its infancy, more to come
+
+
+[logo]: assets/ExchangeLog_128x128.png

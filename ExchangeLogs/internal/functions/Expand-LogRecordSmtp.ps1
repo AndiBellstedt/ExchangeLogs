@@ -1,4 +1,4 @@
-function global:Expand-LogRecordSmtp {
+﻿function global:Expand-LogRecordSmtp {
     <#
     .SYNOPSIS
         Expand the data from records group into a flat data record
@@ -67,7 +67,7 @@ function global:Expand-LogRecordSmtp {
 
             # ServerNameHELO
             [string]$_serverNameHELO = $groupData | Where-Object { $_ -like "220 * Microsoft*" } | Select-Object -First 1
-            [String]$serverNameHELO = $_serverNameHELO.TrimStart("220 ").Split(" ")[0]
+            if($_serverNameHELO) { [String]$serverNameHELO = $_serverNameHELO.TrimStart("220 ").Split(" ")[0] } else { [String]$serverNameHELO = "" }
 
             # ServerOptions
             $_serverOptions = foreach ($item in $groupData) { if ($item -match "^250\s\s\S+\sHello\s\[\S+]\s(?'ServerOptions'(\S|\s)+)") { $Matches['ServerOptions'] } }

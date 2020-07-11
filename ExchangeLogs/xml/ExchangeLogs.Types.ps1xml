@@ -1,26 +1,50 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Types>
-    <!-- ExchangeLog.SMTPReceiveProtocolLog.Record -->
-    <!--
     <Type>
-        <Name>Deserialized.ExchangeLog.SMTPReceiveProtocolLog.Record</Name>
+        <Name>ExchangeLog.IMAP4Log.Record</Name>
         <Members>
-            <MemberSet>
-                <Name>PSStandardMembers</Name>
-                <Members>
-                    <NoteProperty>
-                        <Name>
-                            TargetTypeForDeserialization
-                        </Name>
-                        <Value>
-                            ExchangeLog.SMTPReceiveProtocolLog.Record
-                        </Value>
-                    </NoteProperty>
-                </Members>
-            </MemberSet>
+            <AliasProperty>
+                <Name>DateLogFile</Name>
+                <ReferencedMemberName>Date</ReferencedMemberName>
+            </AliasProperty>
+
+            <CodeProperty IsHidden="true">
+                <Name>SerializationData</Name>
+                <GetCodeReference>
+                    <TypeName>PSFramework.Serialization.SerializationTypeConverter</TypeName>
+                    <MethodName>GetSerializationData</MethodName>
+                </GetCodeReference>
+            </CodeProperty>
         </Members>
+
+        <TypeConverter>
+            <TypeName>PSFramework.Serialization.SerializationTypeConverter</TypeName>
+        </TypeConverter>
     </Type>
-    -->
+
+
+    <Type>
+        <Name>ExchangeLog.POP3Log.Record</Name>
+        <Members>
+            <AliasProperty>
+                <Name>DateLogFile</Name>
+                <ReferencedMemberName>Date</ReferencedMemberName>
+            </AliasProperty>
+
+            <CodeProperty IsHidden="true">
+                <Name>SerializationData</Name>
+                <GetCodeReference>
+                    <TypeName>PSFramework.Serialization.SerializationTypeConverter</TypeName>
+                    <MethodName>GetSerializationData</MethodName>
+                </GetCodeReference>
+            </CodeProperty>
+        </Members>
+
+        <TypeConverter>
+            <TypeName>PSFramework.Serialization.SerializationTypeConverter</TypeName>
+        </TypeConverter>
+    </Type>
+
 
     <Type>
         <Name>ExchangeLog.SMTPReceiveProtocolLog.TypedRecord</Name>
