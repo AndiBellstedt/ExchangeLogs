@@ -3,7 +3,7 @@
     RootModule        = 'ExchangeLogs.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '1.2.1'
+    ModuleVersion     = '1.2.1.1'
 
     # ID used to uniquely identify this module
     GUID              = '4182cc5a-25fa-434a-a852-853483481e35'
@@ -83,7 +83,7 @@
             ProjectUri   = 'https://github.com/AndiBellstedt/ExchangeLogs'
 
             # A URL to an icon representing this module.
-            IconUri      = 'https://github.com/AndiBellstedt/ExchangeLogs/tree/master/ExchangeLogs/assets/ExchangeLogs_128x128.png'
+            IconUri      = 'https://github.com/AndiBellstedt/ExchangeLogs/raw/Development/assets/ExchangeLog_128x128.png'
 
             # ReleaseNotes of this module
             ReleaseNotes = 'https://github.com/AndiBellstedt/ExchangeLogs/blob/master/ExchangeLogs/changelog.md'
