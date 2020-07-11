@@ -15,6 +15,7 @@
         Return the csv records as grouped records by SessionID
 #>
     [CmdletBinding()]
+    [OutputType([System.Collections.ArrayList])]
     param (
         $File
     )

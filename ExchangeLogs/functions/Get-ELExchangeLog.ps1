@@ -10,11 +10,17 @@
     .PARAMETER Path
         The folder to gather logfiles
 
-    .PARAMETER Recursive
+    .PARAMETER Recurse
         If specified, the path will be gathered recursive
 
     .PARAMETER Filter
         Filter to be applied for files to parse
+
+    .PARAMETER LogType
+        Specifies the type of logfile to work through. There are multiple types supported and usually the command does an autodectect.
+        Use tab completion on the parameter to see the supported logfile types.
+
+        Use this parameter of your workload expects an explicit type of log (for example "SMTPReceiveProtocolLog") and you want to ensure, that no other logfiles are processed.
 
     .EXAMPLE
         PS C:\> Get-ELExchangeLog -Path "C:\Logs\SMTPReceive"

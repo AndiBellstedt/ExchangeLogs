@@ -15,6 +15,7 @@
         Returns the name of the grouping field for building record groups
 #>
     [CmdletBinding()]
+    [OutputType([System.String])]
     param (
         $LogType
     )

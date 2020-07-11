@@ -66,7 +66,7 @@
         PSData = @{
 
             # Tags applied to this module. These help with module discovery in online galleries.
-            Tags = @("Exchange", "Exchange Server", "Microsoft Exchange Server", "Logs", "Logfile", "Logfiles")
+            Tags = @("Exchange", "ExchangeServer", "MicrosoftExchangeServer", "Logs", "Logfile", "Logfiles")
 
             # A URL to the license for this module.
             LicenseUri = 'https://github.com/AndiBellstedt/ExchangeLogs/blob/master/LICENSE'
