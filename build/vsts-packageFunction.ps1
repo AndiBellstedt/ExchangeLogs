@@ -9,6 +9,9 @@
 
         Look into the 'AzureFunctionRest' template for generating functions for the module if you do.
 
+    .PARAMETER ModuleName
+        The name to give to the module.
+
     .PARAMETER WorkingDirectory
         The root folder to work from.
 
@@ -16,15 +19,15 @@
         The name of the repository to use for gathering dependencies from.
 #>
 param (
-    $WorkingDirectory = "$($env:SYSTEM_DEFAULTWORKINGDIRECTORY)\_ExchangeLogs",
+    $ModuleName,
+
+    $WorkingDirectory = "$($env:SYSTEM_DEFAULTWORKINGDIRECTORY)\_YAHW",
 
     $Repository = 'PSGallery',
 
     [switch]
     $IncludeAZ
 )
-
-$moduleName = 'ExchangeLogs'
 
 # Prepare Paths
 Write-PSFMessage -Level Host -Message "Creating working folders"
@@ -34,8 +37,8 @@ $modulesFolder = New-Item -Path $workingRoot.FullName -Name Modules -ItemType Di
 
 # Fill out the modules folder
 Write-PSFMessage -Level Host -Message "Transfering built module data into working directory"
-Copy-Item -Path "$moduleRoot\$moduleName" -Destination $modulesFolder.FullName -Recurse -Force
-foreach ($dependency in (Import-PowerShellDataFile -Path "$moduleRoot\$moduleName\$moduleName.psd1").RequiredModules) {
+Copy-Item -Path "$moduleRoot\$ModuleName" -Destination $modulesFolder.FullName -Recurse -Force
+foreach ($dependency in (Import-PowerShellDataFile -Path "$moduleRoot\$ModuleName\$ModuleName.psd1").RequiredModules) {
     $param = @{
         Repository = $Repository
         Name       = $dependency.ModuleName
@@ -52,7 +55,7 @@ foreach ($dependency in (Import-PowerShellDataFile -Path "$moduleRoot\$moduleNam
 # Generate function configuration
 Write-PSFMessage -Level Host -Message 'Generating function configuration'
 $runTemplate = Get-Content -Path "$($WorkingDirectory)\azFunctionResources\run.ps1" -Raw
-foreach ($functionSourceFile in (Get-ChildItem -Path "$($moduleRoot)\$moduleName\functions" -Recurse -Filter '*.ps1')) {
+foreach ($functionSourceFile in (Get-ChildItem -Path "$($moduleRoot)\$ModuleName\functions" -Recurse -Filter '*.ps1')) {
     Write-PSFMessage -Level Host -Message "  Processing function: $functionSourceFile"
     $condensedName = $functionSourceFile.BaseName -replace '-', ''
     $functionFolder = New-Item -Path $workingRoot.FullName -Name $condensedName -ItemType Directory
@@ -128,5 +131,5 @@ foreach ($functionFile in (Get-ChildItem "$($WorkingDirectory)\azFunctionResourc
 $text -join "`n`n" | Set-Content "$($workingroot.FullName)\profile.ps1"
 
 # Zip It
-Write-PSFMessage -Level Host -Message "Creating function archive in '$($WorkingDirectory)\$moduleName.zip'"
-Compress-Archive -Path "$($workingroot.FullName)\*" -DestinationPath "$($WorkingDirectory)\$moduleName.zip" -Force
+Write-PSFMessage -Level Host -Message "Creating function archive in '$($WorkingDirectory)\$ModuleName.zip'"
+Compress-Archive -Path "$($workingroot.FullName)\*" -DestinationPath "$($WorkingDirectory)\$ModuleName.zip" -Force

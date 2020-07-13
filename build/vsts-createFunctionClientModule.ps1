@@ -20,6 +20,9 @@
         Instead of publishing to a gallery, drop a nuget package in the root folder.
         This package can then be picked up in a later step for publishing to Azure Artifacts.
 
+    .PARAMETER ParentModule
+        The actual given name to the module
+
     .PARAMETER ModuleName
         The name to give to the client module.
         By default, the client module will be named '<ModuleName>.Client'.
@@ -43,6 +46,8 @@ param (
     [switch]
     $LocalRepo,
 
+    $ParentModule,
+
     $ModuleName,
 
     [switch]
@@ -56,19 +61,21 @@ param (
 )
 
 #region Handle Working Directory Defaults
-if (-not $WorkingDirectory) {
-    if ($env:RELEASE_PRIMARYARTIFACTSOURCEALIAS) {
+if (-not $WorkingDirectory)
+{
+    if ($env:RELEASE_PRIMARYARTIFACTSOURCEALIAS)
+    {
         $WorkingDirectory = Join-Path -Path $env:SYSTEM_DEFAULTWORKINGDIRECTORY -ChildPath $env:RELEASE_PRIMARYARTIFACTSOURCEALIAS
-    } else { $WorkingDirectory = $env:SYSTEM_DEFAULTWORKINGDIRECTORY }
+    }
+    else { $WorkingDirectory = $env:SYSTEM_DEFAULTWORKINGDIRECTORY }
 }
 #endregion Handle Working Directory Defaults
 
 Write-PSFMessage -Level Host -Message 'Starting Build: Client Module'
-$parentModule = 'ExchangeLogs'
-if (-not $ModuleName) { $ModuleName = 'ExchangeLogs.Client' }
+if (-not $ModuleName) { $ModuleName = "$($ParentModule).Client" }
 Write-PSFMessage -Level Host -Message 'Creating Folder Structure'
 $workingRoot = New-Item -Path $WorkingDirectory -Name $ModuleName -ItemType Directory
-$publishRoot = Join-Path -Path $WorkingDirectory -ChildPath 'publish\ExchangeLogs'
+$publishRoot = Join-Path -Path $WorkingDirectory -ChildPath "publish\$($ParentModule)"
 Copy-Item -Path "$($WorkingDirectory)\azFunctionResources\clientModule\functions" -Destination "$($workingRoot.FullName)\" -Recurse
 Copy-Item -Path "$($WorkingDirectory)\azFunctionResources\clientModule\internal" -Destination "$($workingRoot.FullName)\" -Recurse
 Copy-Item -Path "$($publishRoot)\en-us" -Destination "$($workingRoot.FullName)\" -Recurse
@@ -79,25 +86,30 @@ $encoding = [PSFEncoding]'utf8'
 $functionsText = Get-Content -Path "$($WorkingDirectory)\azFunctionResources\clientModule\function.ps1" -Raw
 
 Write-PSFMessage -Level Host -Message 'Creating Functions'
-foreach ($functionSourceFile in (Get-ChildItem -Path "$($publishRoot)\functions" -Recurse -Filter '*.ps1')) {
+foreach ($functionSourceFile in (Get-ChildItem -Path "$($publishRoot)\functions" -Recurse -Filter '*.ps1'))
+{
     Write-PSFMessage -Level Host -Message "  Processing function: $($functionSourceFile.BaseName)"
     $condensedName = $functionSourceFile.BaseName -replace '-', ''
 
     #region Load Overrides
     $override = @{ }
-    if (Test-Path -Path "$($WorkingDirectory)\azFunctionResources\functionOverride\$($functionSourceFile.BaseName).psd1") {
+    if (Test-Path -Path "$($WorkingDirectory)\azFunctionResources\functionOverride\$($functionSourceFile.BaseName).psd1")
+    {
         $override = Import-PowerShellDataFile -Path "$($WorkingDirectory)\azFunctionResources\functionOverride\$($functionSourceFile.BaseName).psd1"
     }
-    if (Test-Path -Path "$($WorkingDirectory)\azFunctionResources\functionOverride\$($condensedName).psd1") {
+    if (Test-Path -Path "$($WorkingDirectory)\azFunctionResources\functionOverride\$($condensedName).psd1")
+    {
         $override = Import-PowerShellDataFile -Path "$($WorkingDirectory)\azFunctionResources\functionOverride\$($condensedName).psd1"
     }
-    if ($override.NoClientFunction) {
+    if ($override.NoClientFunction)
+    {
         Write-PSFMessage -Level Host -Message "    Override 'NoClientFunction' detected, skipping!"
         continue
     }
 
     # If there is an definition override, use it and continue
-    if (Test-Path -Path "$($WorkingDirectory)\azFunctionResources\functionOverride\$($functionSourceFile.BaseName).ps1") {
+    if (Test-Path -Path "$($WorkingDirectory)\azFunctionResources\functionOverride\$($functionSourceFile.BaseName).ps1")
+    {
         Write-PSFMessage -Level Host -Message "    Override function definition detected, using override"
         Copy-Item -Path "$($WorkingDirectory)\azFunctionResources\functionOverride\$($functionSourceFile.BaseName).ps1" -Destination $functionFolder.FullName
         continue
@@ -105,7 +117,8 @@ foreach ($functionSourceFile in (Get-ChildItem -Path "$($publishRoot)\functions"
 
     # Figure out the Rest Method to use
     $methodName = 'Post'
-    if ($override.RestMethods) {
+    if ($override.RestMethods)
+    {
         $methodName = $override.RestMethods | Where-Object { $_ -ne 'Get' } | Select-Object -First 1
     }
 
@@ -130,26 +143,26 @@ $functionsToExport = (Get-ChildItem -Path $functionFolder.FullName -Recurse -Fil
 
 #region Create Core Module Files
 # Get Manifest of published version, in order to catch build-phase changes such as module version.
-$originalManifestData = Import-PowerShellDataFile -Path "$publishRoot\ExchangeLogs.psd1"
+$originalManifestData = Import-PowerShellDataFile -Path "$publishRoot\$($ParentModule).psd1"
 $prereqHash = @{
     ModuleName    = 'PSFramework'
     ModuleVersion = (Get-Module PSFramework).Version
 }
 $paramNewModuleManifest = @{
-    Path                 = ('{0}\{1}.psd1' -f $workingRoot.FullName, $ModuleName)
-    FunctionsToExport    = $functionsToExport
-    CompanyName          = $originalManifestData.CompanyName
-    Author               = $originalManifestData.Author
-    Description          = $originalManifestData.Description
-    ModuleVersion        = $originalManifestData.ModuleVersion
-    RootModule           = ('{0}.psm1' -f $ModuleName)
-    Copyright            = $originalManifestData.Copyright
-    TypesToProcess       = @()
-    FormatsToProcess     = @()
-    RequiredAssemblies   = @()
-    RequiredModules      = @($prereqHash)
+    Path			  = ('{0}\{1}.psd1' -f $workingRoot.FullName, $ModuleName)
+    FunctionsToExport = $functionsToExport
+    CompanyName	      = $originalManifestData.CompanyName
+    Author		      = $originalManifestData.Author
+    Description	      = $originalManifestData.Description
+    ModuleVersion	  = $originalManifestData.ModuleVersion
+    RootModule	      = ('{0}.psm1' -f $ModuleName)
+    Copyright		  = $originalManifestData.Copyright
+    TypesToProcess    = @()
+    FormatsToProcess  = @()
+    RequiredAssemblies = @()
+    RequiredModules   = @($prereqHash)
     CompatiblePSEditions = 'Core', 'Desktop'
-    PowerShellVersion    = '5.1'
+    PowerShellVersion = '5.1'
 }
 
 if ($IncludeAssembly) { $paramNewModuleManifest.RequiredAssemblies = $originalManifestData.RequiredAssemblies }
@@ -164,24 +177,29 @@ Copy-Item -Path "$($WorkingDirectory)\LICENSE" -Destination "$($workingRoot.Full
 #endregion Create Core Module Files
 
 #region Transfer Additional Content
-if ($IncludeAssembly) {
+if ($IncludeAssembly)
+{
     Copy-Item -Path "$publishRoot\bin" -Destination "$($workingRoot.FullName)\" -Recurse
 }
-if ($IncludeFormat -or $IncludeType) {
+if ($IncludeFormat -or $IncludeType)
+{
     Copy-Item -Path "$publishRoot\xml" -Destination "$($workingRoot.FullName)\" -Recurse
 }
 #endregion Transfer Additional Content
 
 #region Publish
-if ($LocalRepo) {
+if ($LocalRepo)
+{
     # Dependencies must go first
     Write-PSFMessage -Level Important -Message "Creating Nuget Package for module: PSFramework"
     New-PSMDModuleNugetPackage -ModulePath (Get-Module -Name PSFramework).ModuleBase -PackagePath . -WarningAction SilentlyContinue
-    Write-PSFMessage -Level Important -Message "Creating Nuget Package for module: ExchangeLogs"
+    Write-PSFMessage -Level Important -Message "Creating Nuget Package for module: $($ParentModule)"
     New-PSMDModuleNugetPackage -ModulePath $workingRoot.FullName -PackagePath . -EnableException
-} else {
+}
+else
+{
     # Publish to Gallery
-    Write-PSFMessage -Level Important -Message "Publishing the ExchangeLogs module to $($Repository)"
+    Write-PSFMessage -Level Important -Message "Publishing the $($ParentModule) module to $($Repository)"
     Publish-Module -Path $workingRoot.FullName -NuGetApiKey $ApiKey -Force -Repository $Repository
 }
 #endregion Publish
