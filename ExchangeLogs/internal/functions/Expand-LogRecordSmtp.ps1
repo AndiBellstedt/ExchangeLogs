@@ -79,15 +79,15 @@
 
             # MailFrom
             [string[]]$_mailFrom = foreach ($item in $groupData) { if ($item -match "^MAIL FROM:<(?'mailadress'\S+)>") { $Matches['mailadress'] } }
-            if ($_mailFrom) { [string]$mailFrom = [string]::Join(",", $_mailFrom.trim() ) } else { [string]$mailFrom = "" }
+            if ($_mailFrom) { [string]$mailFrom = [string]::Join(",", ($_mailFrom.trim() | Select-Object -Unique)) } else { [string]$mailFrom = "" }
 
             # RcptTo
             [string[]]$_rcptTo = foreach ($item in $groupData) { if ($item -match "^RCPT TO:<(?'mailadress'\S+)>") { $Matches['mailadress'] } }
-            if ($_rcptTo) { [string]$rcptTo = [string]::Join(",", $_rcptTo.trim() ) } else { [string]$rcptTo = "" }
+            if ($_rcptTo) { [string]$rcptTo = [string]::Join(",", ($_rcptTo.trim() | Select-Object -Unique)) } else { [string]$rcptTo = "" }
 
             # XOOrg
             [string[]]$_xoorg = foreach ($item in $groupData) { if ($item -match "XOORG=(?'xoorg'\S+)") { $Matches['xoorg'] } }
-            if ($_xoorg) { [string]$xoorg = [string]::Join(",", $_xoorg.trim() ) } else { [string]$xoorg = "" }
+            if ($_xoorg) { [string]$xoorg = [string]::Join(",", ($_xoorg.trim() | Select-Object -Unique)) } else { [string]$xoorg = "" }
 
             $smtpIdLine = $groupData -match "^250\s2.6.0\s<(?'SmtpId'\S+)"
             [timespan]$deliveryDuration = [timespan]::new(0)
@@ -100,15 +100,14 @@
                 if ($_smtpIdRecords) { $SmtpId = [string]::Join(",", $_smtpIdRecords.trim() ) } else { [string]$smtpId = "" }
 
                 [string[]]$_remoteServerHostName = foreach ($item in $_smtpIdRecords) { $item.split("@")[1] }
-                if ($_remoteServerHostName) { [string]$remoteServerHostName = [string]::Join(",", $_remoteServerHostName ) } else { [string]$remoteServerHostName = "" }
+                if ($_remoteServerHostName) { [string]$remoteServerHostName = [string]::Join(",", ($_remoteServerHostName | Select-Object -Unique) ) } else { [string]$remoteServerHostName = "" }
 
                 [string[]]$_internalId = $smtpIdLine | ForEach-Object { ($_ -split "InternalId=")[1].split(",")[0] }
                 if ($_internalId) { [string]$internalId = [string]::Join(",", $_internalId.trim() ) } else { [string]$internalId = "" }
 
-                if($smtpIdLine -like "bytes in") {
-                    [string[]]$_mailSize = $smtpIdLine | ForEach-Object { ($_ -split " bytes in ")[0].split(" ")[-1] }
+                if($smtpIdLine -like "*bytes in*") {
+                    [int[]]$_mailSize = $smtpIdLine | ForEach-Object { ($_ -split " bytes in ")[0].split(" ")[-1] }
                     if ($_mailSize) {
-                        #$mailSize = [string]::Join(",", $_mailSize.trim() )
                         $mailSize = ($_mailSize | Measure-Object -Sum).Sum
                     } else { [int]$mailSize = 0 }
 
