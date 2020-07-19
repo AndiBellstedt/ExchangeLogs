@@ -80,12 +80,12 @@
             # MailFrom
             #[string[]]$_mailFrom = foreach ($item in $groupData) { if ($item -match "^MAIL FROM:<(?'mailadress'\S+)>") { $Matches['mailadress'] } }
             [string[]]$_mailFrom = ([array]$groupData -like "MAIL FROM:*") -Split 'MAIL FROM:' | Where-Object { $_ }
-            if ($_mailFrom) { [string]$mailFrom = [string]::Join(",", (($_mailFrom.trim() -Replace '^<|>$', '') | Select-Object -Unique)) } else { [string]$mailFrom = "" }
+            if ($_mailFrom) { [string]$mailFrom = [string]::Join(",", (($_mailFrom.trim() -Replace '^<', '').split('>')[0] | Select-Object -Unique)) } else { [string]$mailFrom = "" }
 
             # RcptTo
             #[string[]]$_rcptTo = foreach ($item in $groupData) { if ($item -match "^RCPT TO:<(?'mailadress'\S+)>") { $Matches['mailadress'] } }
             [string[]]$_rcptTo = ([array]$groupData -like "RCPT TO:*") -Split 'RCPT TO:' | Where-Object { $_ }
-            if ($_rcptTo) { [string]$rcptTo = [string]::Join(",", ($_rcptTo.trim() -Replace '^<|>$', '')) } else { [string]$rcptTo = "" }
+            if ($_rcptTo) { [string]$rcptTo = [string]::Join(",", ($_rcptTo.trim() -Replace '^<', '').split('>')[0] ) } else { [string]$rcptTo = "" }
 
             # XOOrg
             [string[]]$_xoorg = foreach ($item in $groupData) { if ($item -match "XOORG=(?'xoorg'\S+)") { $Matches['xoorg'] } }
