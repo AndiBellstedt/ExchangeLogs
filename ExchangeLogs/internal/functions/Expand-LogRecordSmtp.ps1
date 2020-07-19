@@ -46,7 +46,7 @@
             $_startIndicator = $record.Group | Where-Object Event -eq "+"
             $_stopIndicator = $record.Group | Where-Object Event -eq "-"
             if ((-not $_startIndicator) -or (-not $_stopIndicator)) {
-                Write-PSFMessage -Level Warning -Message "Detect fragmented record! Missing previous logfile with partital records. Skip processing $($SessionIdName) '$($record.$SessionIdName)' in $($record.LogFolder)\$($record.LogFileName)"
+                Write-PSFMessage -Level Warning -Message "Detect fragmented record! Skip processing $($SessionIdName) '$($record.$SessionIdName)' in $($record.LogFolder)\$($record.LogFileName)"
                 continue
             }
 
