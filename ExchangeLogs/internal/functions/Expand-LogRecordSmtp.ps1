@@ -95,6 +95,7 @@
             [string]$remoteServerHostName = ""
             [string]$internalId = ""
             [int]$mailSize = 0
+            [String]$SmtpId = ""
             if ($smtpIdLine) {
                 [string[]]$_smtpIdRecords = foreach ($line in $smtpIdLine) { $line.trim("250 2.6.0 <").split(">")[0] }
                 if ($_smtpIdRecords) { $SmtpId = [string]::Join(",", $_smtpIdRecords.trim() ) } else { [string]$smtpId = "" }
