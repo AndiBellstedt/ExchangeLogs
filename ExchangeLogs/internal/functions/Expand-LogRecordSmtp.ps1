@@ -45,8 +45,8 @@
             # assure qualified session in log
             $_startIndicator = $record.Group | Where-Object Event -eq "+"
             $_stopIndicator = $record.Group | Where-Object Event -eq "-"
-            if((-not $_startIndicator) -or (-not $_stopIndicator)) {
-                Write-PSFMessage -Level Warning -Message "Detect fragmented record! Missing previous logfile with partital records. Skip processing $($SessionIdName) '$($record.$SessionIdName)' in $($record.LogFolder)\$($record.LogFileName)"
+            if ((-not $_startIndicator) -or (-not $_stopIndicator)) {
+                Write-PSFMessage -Level Warning -Message "Detect fragmented record! Skip processing $($SessionIdName) '$($record.$SessionIdName)' in $($record.LogFolder)\$($record.LogFileName)"
                 continue
             }
 
@@ -67,27 +67,29 @@
 
             # ServerNameHELO
             [string]$_serverNameHELO = $groupData | Where-Object { $_ -like "220 * Microsoft*" } | Select-Object -First 1
-            if($_serverNameHELO) { [String]$serverNameHELO = $_serverNameHELO.TrimStart("220 ").Split(" ")[0] } else { [String]$serverNameHELO = "" }
+            if ($_serverNameHELO) { [String]$serverNameHELO = $_serverNameHELO.TrimStart("220 ").Split(" ")[0] } else { [String]$serverNameHELO = "" }
 
             # ServerOptions
             $_serverOptions = foreach ($item in $groupData) { if ($item -match "^250\s\s\S+\sHello\s\[\S+]\s(?'ServerOptions'(\S|\s)+)") { $Matches['ServerOptions'] } }
             if ($_serverOptions) { [string]$serverOptions = [string]::Join(",", $_serverOptions) } else { [string]$serverOptions = "" }
 
             # ClientNameHELO
-            $_clientNameHELO = foreach($item in ($groupData -like "EHLO *" | Select-Object -Unique)) { ([string]$item).trim("EHLO ") }
+            $_clientNameHELO = foreach ($item in ($groupData -like "EHLO *" | Select-Object -Unique)) { ([string]$item).trim("EHLO ") }
             if ($_clientNameHELO) { [string]$clientNameHELO = [string]::Join(",", $_clientNameHELO) } else { [string]$clientNameHELO = "" }
 
             # MailFrom
-            [string[]]$_mailFrom = foreach ($item in $groupData) { if ($item -match "^MAIL FROM:<(?'mailadress'\S+)>") { $Matches['mailadress'] } }
-            if ($_mailFrom) { [string]$mailFrom = [string]::Join(",", $_mailFrom.trim() ) } else { [string]$mailFrom = "" }
+            #[string[]]$_mailFrom = foreach ($item in $groupData) { if ($item -match "^MAIL FROM:<(?'mailadress'\S+)>") { $Matches['mailadress'] } }
+            [string[]]$_mailFrom = ([array]$groupData -like "MAIL FROM:*") -Split 'MAIL FROM:' | Where-Object { $_ }
+            if ($_mailFrom) { [string]$mailFrom = [string]::Join(",", (($_mailFrom.trim() -Replace '^<', '').split('>')[0] | Select-Object -Unique)) } else { [string]$mailFrom = "" }
 
             # RcptTo
-            [string[]]$_rcptTo = foreach ($item in $groupData) { if ($item -match "^RCPT TO:<(?'mailadress'\S+)>") { $Matches['mailadress'] } }
-            if ($_rcptTo) { [string]$rcptTo = [string]::Join(",", $_rcptTo.trim() ) } else { [string]$rcptTo = "" }
+            #[string[]]$_rcptTo = foreach ($item in $groupData) { if ($item -match "^RCPT TO:<(?'mailadress'\S+)>") { $Matches['mailadress'] } }
+            [string[]]$_rcptTo = ([array]$groupData -like "RCPT TO:*") -Split 'RCPT TO:' | Where-Object { $_ }
+            if ($_rcptTo) { [string]$rcptTo = [string]::Join(",", ($_rcptTo.trim() -Replace '^<', '').split('>')[0] ) } else { [string]$rcptTo = "" }
 
             # XOOrg
             [string[]]$_xoorg = foreach ($item in $groupData) { if ($item -match "XOORG=(?'xoorg'\S+)") { $Matches['xoorg'] } }
-            if ($_xoorg) { [string]$xoorg = [string]::Join(",", $_xoorg.trim() ) } else { [string]$xoorg = "" }
+            if ($_xoorg) { [string]$xoorg = [string]::Join(",", ($_xoorg.trim() | Select-Object -Unique)) } else { [string]$xoorg = "" }
 
             $smtpIdLine = $groupData -match "^250\s2.6.0\s<(?'SmtpId'\S+)"
             [timespan]$deliveryDuration = [timespan]::new(0)
@@ -95,20 +97,20 @@
             [string]$remoteServerHostName = ""
             [string]$internalId = ""
             [int]$mailSize = 0
+            [String]$SmtpId = ""
             if ($smtpIdLine) {
                 [string[]]$_smtpIdRecords = foreach ($line in $smtpIdLine) { $line.trim("250 2.6.0 <").split(">")[0] }
                 if ($_smtpIdRecords) { $SmtpId = [string]::Join(",", $_smtpIdRecords.trim() ) } else { [string]$smtpId = "" }
 
                 [string[]]$_remoteServerHostName = foreach ($item in $_smtpIdRecords) { $item.split("@")[1] }
-                if ($_remoteServerHostName) { [string]$remoteServerHostName = [string]::Join(",", $_remoteServerHostName ) } else { [string]$remoteServerHostName = "" }
+                if ($_remoteServerHostName) { [string]$remoteServerHostName = [string]::Join(",", ($_remoteServerHostName | Select-Object -Unique) ) } else { [string]$remoteServerHostName = "" }
 
                 [string[]]$_internalId = $smtpIdLine | ForEach-Object { ($_ -split "InternalId=")[1].split(",")[0] }
                 if ($_internalId) { [string]$internalId = [string]::Join(",", $_internalId.trim() ) } else { [string]$internalId = "" }
 
-                if($smtpIdLine -like "bytes in") {
-                    [string[]]$_mailSize = $smtpIdLine | ForEach-Object { ($_ -split " bytes in ")[0].split(" ")[-1] }
+                if ($smtpIdLine -like "*bytes in*") {
+                    [int[]]$_mailSize = $smtpIdLine | ForEach-Object { ($_ -split " bytes in ")[0].split(" ")[-1] }
                     if ($_mailSize) {
-                        #$mailSize = [string]::Join(",", $_mailSize.trim() )
                         $mailSize = ($_mailSize | Measure-Object -Sum).Sum
                     } else { [int]$mailSize = 0 }
 
@@ -311,6 +313,16 @@
                 }
             }
 
+            # final status
+            $_finalStatus = $record.Group[-1].context
+            if ($_finalStatus -like "Local") {
+                $finalStatus = "OK"
+            } elseif ($_finalStatus) {
+                $finalStatus = $_finalStatus
+            } else {
+                $finalStatus = "UNKNOWN"
+            }
+
             # construct output object
             $outputRecord = [PSCustomObject]@{
                 "PSTypeName"                     = "ExchangeLog.$($record.metadataHash['Log-type'].Replace(' ','')).Record"
@@ -348,6 +360,7 @@
                 "MailSize"                       = $MailSize
                 "DeliveryDuration"               = $DeliveryDuration
                 "DeliveryBandwidth"              = $deliveryBandwidth
+                "FinalSessionStatus"             = $finalStatus
                 "FinalizeMessage"                = $groupData[-2]
                 "TlsProtocol"                    = $tlsProtocol
                 "TlsAlgorithmEncryption"         = $tlsAlgorithmEncryption

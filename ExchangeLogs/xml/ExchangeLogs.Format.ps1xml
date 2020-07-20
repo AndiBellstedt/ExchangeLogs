@@ -20,6 +20,7 @@
                     <TableColumnHeader></TableColumnHeader>
                     <TableColumnHeader></TableColumnHeader>
                     <TableColumnHeader><Label>SeqCount</Label></TableColumnHeader>
+                    <TableColumnHeader><Label>SessionStatus</Label></TableColumnHeader>
                     <TableColumnHeader></TableColumnHeader>
                     <TableColumnHeader></TableColumnHeader>
                     <TableColumnHeader><Label>LPort</Label></TableColumnHeader>
@@ -86,6 +87,7 @@
                             <TableColumnItem><PropertyName>TlsEnabled</PropertyName></TableColumnItem>
                             <TableColumnItem><PropertyName>TlsProtocol</PropertyName></TableColumnItem>
                             <TableColumnItem><PropertyName>SequenceCount</PropertyName></TableColumnItem>
+                            <TableColumnItem><PropertyName>FinalSessionStatus</PropertyName></TableColumnItem>
                             <TableColumnItem><PropertyName>DateEnd</PropertyName><Alignment>Right</Alignment><FormatString>HH:mm:ss</FormatString></TableColumnItem>
                             <TableColumnItem><PropertyName>LocalIP</PropertyName></TableColumnItem>
                             <TableColumnItem><PropertyName>LocalPort</PropertyName></TableColumnItem>
@@ -208,6 +210,7 @@
                             <ListItem><PropertyName>TlsStatus</PropertyName></ListItem>
                             <ListItem><PropertyName>TlsDomain</PropertyName></ListItem>
                             <ListItem><PropertyName>TlsDomainCapabilities</PropertyName></ListItem>
+                            <ListItem><PropertyName>FinalSessionStatus</PropertyName></ListItem>
                             <ListItem><PropertyName>FinalizeMessage</PropertyName></ListItem>
                             <ListItem><PropertyName>InternalId</PropertyName></ListItem>
                             <ListItem><PropertyName>SmtpId</PropertyName></ListItem>

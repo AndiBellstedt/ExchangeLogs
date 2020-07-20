@@ -1,4 +1,12 @@
 ﻿# Changelog
+## 1.2.3 (2020-07-19)
+- Fix: Get-ELExchangeLog
+    - Fixing SMTP log transform with mailsize on records with multiple mails
+    - SmtpId with wrong information on smtp logs on some circumstances
+    - Improved MailFrom and RcptTo extraction from smtp logs in some circumstances
+- Upd: Get-ELExchangeLog
+    - New property "FinalSessionStatus" on output object for smtp logs
+
 ## 1.2.1 (2020-07-11)
 - Fix: Get-ELExchangeLog
     - Minor fixes on some logging circumstances were leading to errors -> Now, the function works arround this behaviour
