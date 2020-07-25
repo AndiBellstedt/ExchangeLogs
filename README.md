@@ -40,7 +40,5 @@ All cmdlets are build with
 - pipeling availabilties
 - comprehensive logging on verbose and debug channel
 
-> Project is still in its infancy, more to come
-
 
 [logo]: assets/ExchangeLog_128x128.png
