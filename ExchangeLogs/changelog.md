@@ -1,4 +1,8 @@
 ﻿# Changelog
+## 1.2.4 (2020-07-25)
+- Fix: Get-ELExchangeLog
+    - fixing MailFrom and RcptTo extraction from smtp logs on multiple mail objects in a single session
+
 ## 1.2.3 (2020-07-19)
 - Fix: Get-ELExchangeLog
     - Fixing SMTP log transform with mailsize on records with multiple mails
