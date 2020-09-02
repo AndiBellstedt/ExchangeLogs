@@ -3,7 +3,7 @@
     RootModule        = 'ExchangeLogs.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '1.2.4.0'
+    ModuleVersion     = '1.3.0.0'
 
     # ID used to uniquely identify this module
     GUID              = '4182cc5a-25fa-434a-a852-853483481e35'
@@ -41,7 +41,9 @@
 
     # Functions to export from this module
     FunctionsToExport = @(
-        'Get-ELExchangeLog'
+        'Get-ELExchangeLog',
+        'Invoke-ELCentralizeLogging',
+        'Invoke-ELExchangeLogConvert'
     )
 
     # Cmdlets to export from this module
