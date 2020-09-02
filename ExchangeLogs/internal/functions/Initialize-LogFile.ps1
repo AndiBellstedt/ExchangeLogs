@@ -31,7 +31,7 @@
 
     if (Test-Path -Path $LogFile -IsValid) {
         if (Test-Path -Path $LogFile -PathType Container) {
-            $LogFile = Join-Path -Path $LogFile AlternateLogName
+            $LogFile = Join-Path -Path $LogFile -ChildPath $AlternateLogName
         }
 
         $logFilePath = Split-Path -Path $LogFile
