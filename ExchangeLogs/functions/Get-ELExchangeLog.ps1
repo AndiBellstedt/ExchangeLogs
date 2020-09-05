@@ -68,7 +68,7 @@
             }
             if ($Recurse) { $options.Add("Recurse", $true) }
             try {
-                $ChildItemList = Get-ChildItem @options
+                $ChildItemList = Get-ChildItem @options | Where-Object Length -ne 0
                 if ($Filter) {
                     $ChildItemList = $ChildItemList | Where-Object Name -like $Filter
                 }
