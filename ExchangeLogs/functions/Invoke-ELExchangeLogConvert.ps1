@@ -62,15 +62,29 @@
         If this switch is enabled, you will be prompted for confirmation before executing any operations that change state.
 
     .EXAMPLE
-        PS C:\> Invoke-ELExchangeLogConvert -Source "\\SRV01\Logs\Exchange\Staging" -Destination "\\SRV01\Logs\Exchange\Reporting" -Archive "\\SRV01\Logs\Exchange\Archive"
+        PS C:\> Invoke-ELExchangeLogConvert -Source "\\SRV01\Logs\Exchange\Staging"
 
+        This will convert *.log files in all folders in path "\\SRV01\Logs\Exchange\Staging".
+        The parameter "Source" can also be used with the alias "Path".
+
+        Converted data will be put in CSV files in a folder "Reporting" in path "\\SRV01\Logs\Exchange".
+        Processed files will be archived in a folder "Archive" in path "\\SRV01\Logs\Exchange".
 
     .EXAMPLE
-        PS C:\> Invoke-ELExchangeLogConvert -Source "\\$($env:USERDNSDOMAIN)\System\Logs\Exchange\Staging" -Destination "\\$($env:USERDNSDOMAIN)\System\Logs\Exchange\Reporting" -Archive "\\$($env:USERDNSDOMAIN)\system\Logs\Exchange\Archive" -MaxFileCount 1000 -Log "C:\Administration\Logs\Exchange\ExchangeLogConvert.log"
+        PS C:\> Invoke-ELExchangeLogConvert -Path "\\SRV01\Logs\Exchange\Staging" -Destination "\\SRV01\Logs\Exchange\Reporting" -Archive "\\SRV01\Logs\Exchange\Archive"
 
+        Same behavior as in the first example, but the output path and the archival path is specified explicitly.
+        Alias "Path" is used on the parameter "Source".
+
+    .EXAMPLE
+        PS C:\> Invoke-ELExchangeLogConvert -Source "\\$($env:USERDNSDOMAIN)\System\Logs\Exchange\Staging" -Destination "\\$($env:USERDNSDOMAIN)\System\Logs\Exchange\Reporting" -Archive "\\$($env:USERDNSDOMAIN)\system\Logs\Exchange\Archive" -MaxFileCount 1000 -LogFile "C:\Administration\Logs\Exchange\ExchangeLogConvert.log"
+
+        In this case, the function will process a maxium of 1000 files (default is 200) and actions will be logged in logfile "C:\Administration\Logs\Exchange\ExchangeLogConvert.log"
 #>
     [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium')]
     param(
+        [Parameter(Mandatory = $true)]
+        [Alias("Path")]
         [String]
         $Source,
 
