@@ -26,9 +26,9 @@
     $content = $File | Get-Content
 
     # split metadata and logcontent (first lines fo logfile)
-    $metadata = $content -match '^#.*'
+    $metadata = $content -match '^#.*' | Select-Object -First 7 -Unique
     $header = $metadata[-1].split(": ")[-1]
-    $logcontent = $content -notmatch $header
+    $logcontent = $content -match '^\d.*'
 
     # query meta data informations into hashtable
     $metadataHash = [ordered]@{}

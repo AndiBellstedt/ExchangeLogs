@@ -1,7 +1,17 @@
 ﻿# Changelog
+## 1.3.0 (2020-09-02)
+- New: Invoke-ELCentralizeLogging
+    - Workflow function intendet to create a centralized logging directory to gather logfiles (supported by the module) from all exchange servers into a single directory or fileshare and withing a folder structure eligible for further processing.
+    - See help for more information
+- New: Invoke-ELExchangeLogConvert
+    - Workflow function intendet to parse through a folder structure (staging directory, filled by Invoke-ELCentralizeLogging), find all exchange logfiles (supported by the module) and convert the files into flatten and better read-/processable CSV files.
+    - See help for more information
+- Fix: Get-ELExchangeLog
+    - Function new can handle logs with multiple metadata lines in the conent. (service restarts or config changes can bring additional header information to W3C logfiles)
+
 ## 1.2.4 (2020-07-25)
 - Fix: Get-ELExchangeLog
-    - fixing MailFrom and RcptTo extraction from smtp logs on multiple mail objects in a single session
+    - Fixing MailFrom and RcptTo extraction from smtp logs on multiple mail objects in a single session
 
 ## 1.2.3 (2020-07-19)
 - Fix: Get-ELExchangeLog
@@ -18,8 +28,8 @@
     - POP3 and IMAP logfiles got format data to optimize output to console with Format-List, Format-Table and Out-Gridview
     - Add alias 'gel' on command 'Get-ELExchangeLog'
 - Upd: general
-    - add module logo
-    - add descriptions and a little bit of documentation
+    - Add module logo
+    - Add descriptions and a little bit of documentation
 
 ## 1.2.0 (2020-07-05)
 - New: Get-ELExchangeLog
@@ -37,8 +47,8 @@
     - Add support for importing and interpreting SMTP send log files.
     - Add more detailed fields on output records. TLS certificate informations are now separated into fields for subject, issuer, validity time, subject alternative names, ...
 - Fix: Get-ELExchangeLog
-    - minor bugfixes on record processing when session in the logfile is not having all TLS information
-    - minor time and output optimizations
+    - Minor bugfixes on record processing when session in the logfile is not having all TLS information
+    - Minor time and output optimizations
 
 ## 1.0.0 (2020-06-26)
 - New: Frist stable version 1.0.0\
