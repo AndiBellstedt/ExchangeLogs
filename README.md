@@ -1,5 +1,5 @@
 ﻿![logo][]
-# ExchangeLogs - Getting the insides
+# ExchangeLogs - Getting the insights
 
 A PowerShell module for parsing exchange transport log files on further investigation.
 
