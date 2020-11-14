@@ -18,7 +18,7 @@
     Copyright         = 'Copyright (c) 2020 Andreas Bellstedt'
 
     # Description of the functionality provided by this module
-    Description       = 'Module for interpreting and transforming Microsoft Exchange server transport log files. Anyboday, who tried to read native transport log files in exchange, will know, how much it is worth to have an single line/ single object which can be exported to a csv, xml or spit out into an database for later analytical processing.'
+    Description       = 'Module for interpreting and transforming Microsoft Exchange server transport log files. Anybody, who tried to read native transport log files in exchange, will know, how much it is worth to have an single line/ single object which can be exported to a csv, xml or spit out into an database for later analytical processing.'
 
     # Minimum version of the Windows PowerShell engine required by this module
     PowerShellVersion = '5.0'
