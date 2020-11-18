@@ -75,7 +75,9 @@
                 "MicrosoftExchangeServer",
                 "Logs",
                 "Logfile",
-                "Logfiles"
+                "Logfiles",
+                'PSEdition_Desktop',
+                'Windows'
             )
 
             # A URL to the license for this module.

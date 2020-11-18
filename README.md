@@ -1,5 +1,10 @@
 ﻿![logo][]
 # ExchangeLogs - Getting the insights
+| Plattform | Information |
+|- |-|-|
+| PowerShell gallery | [![PowerShell Gallery](https://img.shields.io/powershellgallery/v/ExchangeLogs?label=psgallery)](https://www.powershellgallery.com/packages/ExchangeLogs) [![PowerShell Gallery](https://img.shields.io/powershellgallery/p/ExchangeLogs)](https://www.powershellgallery.com/packages/ExchangeLogs) [![PowerShell Gallery](https://img.shields.io/powershellgallery/dt/ExchangeLogs?style=plastic)](https://www.powershellgallery.com/packages/ExchangeLogs) |
+| GitHub  | [![GitHub release](https://img.shields.io/github/release/AndiBellstedt/ExchangeLogs.svg)](https://github.com/AndiBellstedt/ExchangeLogs/releases/latest) ![GitHub](https://img.shields.io/github/license/AndiBellstedt/ExchangeLogs?style=plastic) <br> ![GitHub issues](https://img.shields.io/github/issues-raw/AndiBellstedt/ExchangeLogs?style=plastic) <br> ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/AndiBellstedt/ExchangeLogs/master?label=last%20commit%3A%20master&style=plastic) <br> ![GitHub last commit (branch)](https://img.shields.io/github/last-commit/AndiBellstedt/ExchangeLogs/Development?label=last%20commit%3A%20development&style=plastic) |
+<br>
 
 A PowerShell module for parsing exchange transport log files on further investigation.
 
