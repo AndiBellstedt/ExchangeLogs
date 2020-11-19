@@ -3,7 +3,7 @@
     RootModule        = 'ExchangeLogs.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '1.3.0.0'
+    ModuleVersion     = '1.3.0.1'
 
     # ID used to uniquely identify this module
     GUID              = '4182cc5a-25fa-434a-a852-853483481e35'
@@ -18,7 +18,7 @@
     Copyright         = 'Copyright (c) 2020 Andreas Bellstedt'
 
     # Description of the functionality provided by this module
-    Description       = 'Module for interpreting and transforming Microsoft Exchange server transport log files. Anyboday, who tried to read native transport log files in exchange, will know, how much it is worth to have an single line/ single object which can be exported to a csv, xml or spit out into an database for later analytical processing.'
+    Description       = 'Module for interpreting and transforming Microsoft Exchange server transport log files. Anybody, who tried to read native transport log files in exchange, will know, how much it is worth to have an single line/ single object which can be exported to a csv, xml or spit out into an database for later analytical processing.'
 
     # Minimum version of the Windows PowerShell engine required by this module
     PowerShellVersion = '5.0'
@@ -75,7 +75,9 @@
                 "MicrosoftExchangeServer",
                 "Logs",
                 "Logfile",
-                "Logfiles"
+                "Logfiles",
+                'PSEdition_Desktop',
+                'Windows'
             )
 
             # A URL to the license for this module.

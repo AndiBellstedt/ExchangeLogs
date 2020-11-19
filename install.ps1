@@ -45,7 +45,7 @@ Param (
 $ModuleName = "ExchangeLogs"
 
 # Base path to the github repository
-$BaseUrl = "https://github.com/<InsertUsernameHere>/ExchangeLogs"
+$BaseUrl = "https://github.com/AndiBellstedt/ExchangeLogs"
 
 # If the module is in a subfolder of the cloned repository, specify relative path here. Empty string to skip.
 $SubFolder = "ExchangeLogs"

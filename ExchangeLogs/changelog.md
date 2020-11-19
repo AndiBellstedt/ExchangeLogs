@@ -1,4 +1,8 @@
 ﻿# Changelog
+## 1.3.0.1 (2020-11-18)
+- No functional changes
+- Fix: Fixing some typos
+- Upd: Add plattform and statistic information to readme file.
 ## 1.3.0 (2020-09-02)
 - New: Invoke-ELCentralizeLogging
     - Workflow function intendet to create a centralized logging directory to gather logfiles (supported by the module) from all exchange servers into a single directory or fileshare and withing a folder structure eligible for further processing.
