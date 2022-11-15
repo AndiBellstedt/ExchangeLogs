@@ -1,4 +1,11 @@
 ﻿# Changelog
+## 1.3.1.0 (2020-11-13)
+- New: ---
+- Fix:
+    - Fix logging issues in command Invoke-ELCentralizeLogging
+    - Fix information export issue on remembering last processed file in command Invoke-ELCentralizeLogging
+- Upd: ---
+
 ## 1.3.0.1 (2020-11-18)
 - No functional changes
 - Fix: Fixing some typos
