@@ -8,23 +8,23 @@
         It's intendet to create a centralized logging directory to gather logfiles (supported by the module) from all exchange servers into a single directory or fileshare and withing a folder structure eligible for further processing.
 
         The intented workflow provided by this function:
-          - find a exchange server to connect on via active directory serviceconnectionpoitns
-          - connect to exchange server
-          - find all exchange servers and subsequently query logging path for supported services
-          - copy the logfiles out of the exchange servers to a central logging share (usually a staging folder, due to further processing with Invoke-ELExchangeLogConvert. See more info in Invoke-ELExchangeLogConvert help.)
-          - remembering last processed file, to reduce noise and load on next processing
+        - find a exchange server to connect on via active directory serviceconnectionpoitns
+        - connect to exchange server
+        - find all exchange servers and subsequently query logging path for supported services
+        - copy the logfiles out of the exchange servers to a central logging share (usually a staging folder, due to further processing with Invoke-ELExchangeLogConvert. See more info in Invoke-ELExchangeLogConvert help.)
+        - remembering last processed file, to reduce noise and load on next processing
 
         Requirements:
-          - The executing user needs the permission to connect with powershell remoting into exchange server
-                - Predefined roles like "Organization Management" or "Server Management" can be used
-                - Find/ create a individual management role with Get-ManagementRole cmdlet
-          - The executing user needs permission to access the administrative shares on the server
-          - The users needs read/write permission on the central network share
+        - The executing user needs the permission to connect with powershell remoting into exchange server
+            - Predefined roles like "Organization Management" or "Server Management" can be used
+            - Find/ create a individual management role with Get-ManagementRole cmdlet
+        - The executing user needs permission to access the administrative shares on the server
+        - The users needs read/write permission on the central network share
 
         The workflow will be:
-            - First, find all logs and centralize them into a staging-folder with 'Invoke-ELCentralizeLogging'
-            - Second, process staging-folder with 'Invoke-ELExchangeLogConvert' and build read- and processable CSV files in a reporting-folder
-            - Use other BI-/Analytical tools to process the CSV Files in the reporting folder
+        - First, find all logs and centralize them into a staging-folder with 'Invoke-ELCentralizeLogging'
+        - Second, process staging-folder with 'Invoke-ELExchangeLogConvert' and build read- and processable CSV files in a reporting-folder
+        - Use other BI-/Analytical tools to process the CSV Files in the reporting folder
 
     .PARAMETER Destination
         The path to copy all logfiles from the exchange server(s) to.
@@ -88,7 +88,7 @@
         PS C:\> Invoke-ELCentralizeLogging -Path "\\$($env:USERDNSDOMAIN)\system\Logs\Exchange\Staging" -LastFileDirectory "C:\Administration\Logs\CentralizedLogs"
 
         Same result as in previous examples but with alias "Path" and "LastFileDirectory" on parameters "Destination" and "DirectoryLastProcessedFile".
-#>
+    #>
     [CmdletBinding(SupportsShouldProcess = $true, ConfirmImpact = 'Medium')]
     param(
         [Parameter(Mandatory = $true)]
@@ -184,22 +184,22 @@
         $exServer = $exServer | Sort-Object -Property Name -Unique
         Write-PSFMessage -Level Verbose -Message "Found $($exServer.count) exchange server" -Tag "ExchangeLogs"
 
-        if("All" -in $IncludeLog -or "HubTransport" -in $IncludeLog) {
+        if ("All" -in $IncludeLog -or "HubTransport" -in $IncludeLog) {
             $logPathSmtpHub = Get-TransportService | Sort-Object -Property Name | Select-Object -Property Name, SendProtocolLogPath, ReceiveProtocolLogPath
             Write-PSFMessage -Level Verbose -Message "Found $($logPathSmtpHub.count) TransportService" -Tag "ExchangeLogs"
         }
 
-        if("All" -in $IncludeLog -or "Frontendtransport" -in $IncludeLog) {
+        if ("All" -in $IncludeLog -or "Frontendtransport" -in $IncludeLog) {
             $logPathSmtpFrontEnd = Get-FrontEndTransportService | Sort-Object -Property Name | Select-Object -Property Name, SendProtocolLogPath, ReceiveProtocolLogPath
             Write-PSFMessage -Level Verbose -Message "Found $($logPathSmtpFrontEnd.count) FrontEndTransportService" -Tag "ExchangeLogs"
         }
 
-        if("All" -in $IncludeLog -or "IMAP4" -in $IncludeLog) {
+        if ("All" -in $IncludeLog -or "IMAP4" -in $IncludeLog) {
             $logPathImap = $exServer | ForEach-Object { Get-ImapSettings -Server $_.name } | Sort-Object -Property Server | Select-Object -Property Server, LogFileLocation
             Write-PSFMessage -Level Verbose -Message "Found $($logPathImap.count) ImapSettings" -Tag "ExchangeLogs"
         }
 
-        if("All" -in $IncludeLog -or "POP3" -in $IncludeLog) {
+        if ("All" -in $IncludeLog -or "POP3" -in $IncludeLog) {
             $logPathPop = $exServer | ForEach-Object { Get-PopSettings -Server $_.name } | Sort-Object -Property Server | Select-Object -Property Server, LogFileLocation
             Write-PSFMessage -Level Verbose -Message "Found $($logPathPop.count) PopSettings" -Tag "ExchangeLogs"
         }
@@ -266,7 +266,7 @@
 
         # work through each server and each directory
         foreach ($server in $exServer.name) {
-            Write-PSFMessage -Level Verbose -Message "Working with $($server)" | Out-File -FilePath $LogFile -Encoding default -Force -Append
+            Write-PSFMessage -Level Verbose -Message "Working with $($server)"
             $sourcePathInServer = $sourcePaths | Where-Object ComputerName -like $server
 
             foreach ($source in $sourcePathInServer) {
@@ -331,7 +331,7 @@
                 if ($processedFiles) {
                     Write-PSFMessage -Level Host -Message "Processed $($processedFiles.count) files and remembering LastFileProcessed: $($processedFiles[-1].FullName)" -Tag "ExchangeLogs"
                     if ($pscmdlet.ShouldProcess("Last processed file '$($processedFiles[-1].FullName)' to $($lastFile)", "Export")) {
-                        $processedFiles[-1] | Export-PSFClixml -Path $lastFile -Force
+                        $processedFiles[-1] | Export-PSFClixml -Path $lastFile
                     }
                 } else {
                     Write-PSFMessage -Level Host -Message "No files processed from directory: $($sourcePath)" -Tag "ExchangeLogs"

@@ -3,7 +3,7 @@
     RootModule        = 'ExchangeLogs.psm1'
 
     # Version number of this module.
-    ModuleVersion     = '1.3.0.1'
+    ModuleVersion     = '1.3.1.0'
 
     # ID used to uniquely identify this module
     GUID              = '4182cc5a-25fa-434a-a852-853483481e35'
